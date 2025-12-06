@@ -16,11 +16,11 @@ MAX_PAGE_SIZE = 100
 
 # Couleurs du thème (bleu nuit + corail)
 COLORS = {
-    "primary": "#FF6B6B",      # Corail
-    "secondary": "#1A1A2E",    # Bleu nuit foncé
-    "background": "#16213E",   # Bleu nuit
-    "text": "#FFFFFF",         # Blanc
-    "accent": "#0F3460",       # Bleu nuit clair
+    "primary": "#FF6B6B",  # Corail
+    "secondary": "#1A1A2E",  # Bleu nuit foncé
+    "background": "#16213E",  # Bleu nuit
+    "text": "#FFFFFF",  # Blanc
+    "accent": "#0F3460",  # Bleu nuit clair
 }
 
 # Configuration des graphiques

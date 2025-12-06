@@ -55,7 +55,7 @@ class TestAPIClient:
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "total": 294,
-            "employees": [{"id": 1, "name": "Test"}]
+            "employees": [{"id": 1, "name": "Test"}],
         }
         mock_response.raise_for_status = Mock()
         mock_request.return_value = mock_response
@@ -88,7 +88,9 @@ class TestAPIClient:
             {"id": 3, "departement": "IT", "age": 25, "left_company": 0},
         ]
 
-        with patch.object(api_client, 'get_employees', return_value={"employees": mock_employees}):
+        with patch.object(
+            api_client, "get_employees", return_value={"employees": mock_employees}
+        ):
             # Filtre par département
             result = api_client.filter_employees(departement="IT")
             assert len(result) == 2

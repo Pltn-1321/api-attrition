@@ -58,12 +58,9 @@ try:
         st.markdown("---")
 
         # 2. Graphiques
-        tab1, tab2, tab3, tab4 = st.tabs([
-            "📊 Départements",
-            "👥 Démographie",
-            "💰 Rémunération",
-            "😊 Satisfaction"
-        ])
+        tab1, tab2, tab3, tab4 = st.tabs(
+            ["📊 Départements", "👥 Démographie", "💰 Rémunération", "😊 Satisfaction"]
+        )
 
         with tab1:
             st.subheader("Répartition par Département")
@@ -85,14 +82,19 @@ try:
             st.plotly_chart(fig1, use_container_width=True)
 
             # Revenu moyen par département
-            dept_salary = df.groupby("departement")["revenu_mensuel"].mean().reset_index()
+            dept_salary = (
+                df.groupby("departement")["revenu_mensuel"].mean().reset_index()
+            )
 
             fig2 = px.bar(
                 dept_salary,
                 x="departement",
                 y="revenu_mensuel",
                 title="Revenu Moyen par Département (€)",
-                labels={"departement": "Département", "revenu_mensuel": "Revenu moyen (€)"},
+                labels={
+                    "departement": "Département",
+                    "revenu_mensuel": "Revenu moyen (€)",
+                },
                 color="revenu_mensuel",
                 color_continuous_scale=["#1A1A2E", "#FF6B6B"],
             )
@@ -147,14 +149,19 @@ try:
 
             with col2:
                 # Revenu moyen par département
-                dept_salary = df.groupby("departement")["revenu_mensuel"].mean().reset_index()
+                dept_salary = (
+                    df.groupby("departement")["revenu_mensuel"].mean().reset_index()
+                )
 
                 fig7 = px.bar(
                     dept_salary,
                     x="departement",
                     y="revenu_mensuel",
                     title="Revenu Moyen par Département",
-                    labels={"departement": "Département", "revenu_mensuel": "Revenu moyen (€)"},
+                    labels={
+                        "departement": "Département",
+                        "revenu_mensuel": "Revenu moyen (€)",
+                    },
                     color="revenu_mensuel",
                     color_continuous_scale=["#1A1A2E", "#FF6B6B"],
                 )
@@ -170,7 +177,7 @@ try:
                 labels={
                     "annee_experience_totale": "Années d'expérience",
                     "revenu_mensuel": "Revenu mensuel (€)",
-                    "departement": "Département"
+                    "departement": "Département",
                 },
             )
             st.plotly_chart(fig8, use_container_width=True)
@@ -179,22 +186,31 @@ try:
             st.subheader("Analyse de Satisfaction")
 
             # Satisfaction moyenne par département
-            dept_satisfaction = df.groupby("departement")["satisfaction_moyenne"].mean().reset_index()
+            dept_satisfaction = (
+                df.groupby("departement")["satisfaction_moyenne"].mean().reset_index()
+            )
 
             fig9 = px.bar(
                 dept_satisfaction,
                 x="departement",
                 y="satisfaction_moyenne",
                 title="Satisfaction Moyenne par Département",
-                labels={"departement": "Département", "satisfaction_moyenne": "Satisfaction moyenne"},
+                labels={
+                    "departement": "Département",
+                    "satisfaction_moyenne": "Satisfaction moyenne",
+                },
                 color="satisfaction_moyenne",
                 color_continuous_scale=["#FF6B6B", "#4ECDC4"],
             )
-            fig9.add_hline(y=2.5, line_dash="dash", line_color="white", annotation_text="Moyenne")
+            fig9.add_hline(
+                y=2.5, line_dash="dash", line_color="white", annotation_text="Moyenne"
+            )
             st.plotly_chart(fig9, use_container_width=True)
 
             # Répartition de la satisfaction
-            satisfaction_distribution = df["satisfaction_moyenne"].value_counts().sort_index().reset_index()
+            satisfaction_distribution = (
+                df["satisfaction_moyenne"].value_counts().sort_index().reset_index()
+            )
             satisfaction_distribution.columns = ["satisfaction", "count"]
 
             fig10 = px.bar(
@@ -202,7 +218,10 @@ try:
                 x="satisfaction",
                 y="count",
                 title="Distribution de la Satisfaction",
-                labels={"satisfaction": "Niveau de satisfaction", "count": "Nombre d'employés"},
+                labels={
+                    "satisfaction": "Niveau de satisfaction",
+                    "count": "Nombre d'employés",
+                },
                 color="satisfaction",
                 color_continuous_scale=["#FF6B6B", "#4ECDC4"],
             )

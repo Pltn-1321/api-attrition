@@ -20,7 +20,9 @@ if "api_client" not in st.session_state:
 
 # Header
 st.title(f"{APP_ICON} API Attrition - Dashboard")
-st.markdown("### Bienvenue sur le tableau de bord de prédiction d'attrition des employés")
+st.markdown(
+    "### Bienvenue sur le tableau de bord de prédiction d'attrition des employés"
+)
 
 st.markdown("---")
 
@@ -63,9 +65,23 @@ with st.spinner("🔄 Connexion à l'API..."):
                 employees = data.get("employees", [])
 
                 # Calculer des statistiques moyennes
-                avg_age = sum(emp.get("age", 0) for emp in employees) / len(employees) if employees else 0
-                avg_satisfaction = sum(emp.get("satisfaction_moyenne", 0) for emp in employees) / len(employees) if employees else 0
-                avg_revenue = sum(emp.get("revenu_mensuel", 0) for emp in employees) / len(employees) if employees else 0
+                avg_age = (
+                    sum(emp.get("age", 0) for emp in employees) / len(employees)
+                    if employees
+                    else 0
+                )
+                avg_satisfaction = (
+                    sum(emp.get("satisfaction_moyenne", 0) for emp in employees)
+                    / len(employees)
+                    if employees
+                    else 0
+                )
+                avg_revenue = (
+                    sum(emp.get("revenu_mensuel", 0) for emp in employees)
+                    / len(employees)
+                    if employees
+                    else 0
+                )
 
                 col1, col2, col3 = st.columns(3)
 
@@ -91,7 +107,9 @@ with st.spinner("🔄 Connexion à l'API..."):
                     )
 
             except Exception as e:
-                show_error(f"Erreur lors de la récupération des statistiques : {str(e)}")
+                show_error(
+                    f"Erreur lors de la récupération des statistiques : {str(e)}"
+                )
 
     except Exception as e:
         show_error(f"Impossible de se connecter à l'API : {str(e)}")
@@ -101,7 +119,8 @@ with st.spinner("🔄 Connexion à l'API..."):
 st.markdown("---")
 st.header("📖 Comment utiliser cette application")
 
-st.markdown("""
+st.markdown(
+    """
 Utilisez la barre latérale pour naviguer entre les différentes pages :
 
 - **📊 Explorer** : Parcourez et filtrez la liste complète des employés
@@ -109,7 +128,8 @@ Utilisez la barre latérale pour naviguer entre les différentes pages :
 - **📈 Statistiques** : Visualisez les données avec des graphiques interactifs
 
 Toutes les données proviennent de l'API FastAPI qui est connectée à une base PostgreSQL.
-""")
+"""
+)
 
 # Footer
 render_footer()

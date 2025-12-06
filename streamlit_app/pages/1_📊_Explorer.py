@@ -29,7 +29,7 @@ with st.sidebar:
     departements = st.multiselect(
         "Département",
         options=["Commercial", "Consulting", "Data Science", "RH", "IT"],
-        help="Filtrer par département"
+        help="Filtrer par département",
     )
 
     # Filtre par âge
@@ -39,7 +39,7 @@ with st.sidebar:
         min_value=18,
         max_value=70,
         value=(18, 70),
-        label_visibility="collapsed"
+        label_visibility="collapsed",
     )
 
     # Bouton reset
@@ -96,21 +96,23 @@ try:
             display_df["revenu_mensuel"] = display_df["revenu_mensuel"].apply(
                 lambda x: f"{x:,.0f} €".replace(",", " ")
             )
-            display_df["satisfaction_moyenne"] = display_df["satisfaction_moyenne"].apply(
-                lambda x: f"{x:.1f}/4" if pd.notna(x) else "N/A"
-            )
+            display_df["satisfaction_moyenne"] = display_df[
+                "satisfaction_moyenne"
+            ].apply(lambda x: f"{x:.1f}/4" if pd.notna(x) else "N/A")
 
             # Renommer les colonnes pour l'affichage
-            display_df = display_df.rename(columns={
-                "id": "ID",
-                "genre": "Genre",
-                "age": "Âge",
-                "poste": "Poste",
-                "departement": "Département",
-                "revenu_mensuel": "Revenu Mensuel",
-                "satisfaction_moyenne": "Satisfaction",
-                "annees_dans_l_entreprise": "Ancienneté",
-            })
+            display_df = display_df.rename(
+                columns={
+                    "id": "ID",
+                    "genre": "Genre",
+                    "age": "Âge",
+                    "poste": "Poste",
+                    "departement": "Département",
+                    "revenu_mensuel": "Revenu Mensuel",
+                    "satisfaction_moyenne": "Satisfaction",
+                    "annees_dans_l_entreprise": "Ancienneté",
+                }
+            )
 
             # Affichage du tableau
             st.dataframe(

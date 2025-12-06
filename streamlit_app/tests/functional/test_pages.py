@@ -16,7 +16,7 @@ class TestPages:
             "employees": [
                 {"id": i, "age": 30, "departement": "IT", "left_company": 0}
                 for i in range(10)
-            ]
+            ],
         }
         result = mock_instance.get_employees()
         assert result["total"] == 10

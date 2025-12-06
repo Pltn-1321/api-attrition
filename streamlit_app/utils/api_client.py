@@ -51,9 +51,7 @@ class APIClient:
         """
         return self._make_request("GET", "/health")
 
-    def get_employees(
-        self, skip: int = 0, limit: int = 100
-    ) -> Dict[str, Any]:
+    def get_employees(self, skip: int = 0, limit: int = 100) -> Dict[str, Any]:
         """
         Récupère la liste des employés avec pagination.
 

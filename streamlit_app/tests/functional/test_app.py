@@ -11,13 +11,11 @@ def mock_api_client():
         instance = mock.return_value
         instance.health_check.return_value = {
             "status": "healthy",
-            "database": "connected"
+            "database": "connected",
         }
         instance.get_employees.return_value = {
             "total": 294,
-            "employees": [
-                {"id": 1, "departement": "IT", "age": 30, "left_company": 0}
-            ]
+            "employees": [{"id": 1, "departement": "IT", "age": 30, "left_company": 0}],
         }
         instance.get_employee.return_value = {
             "id": 1,
@@ -25,7 +23,7 @@ def mock_api_client():
             "age": 30,
             "poste": "Developer",
             "departement": "IT",
-            "left_company": 0
+            "left_company": 0,
         }
         yield instance
 
