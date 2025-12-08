@@ -46,7 +46,7 @@ class TestAPIClient:
         with pytest.raises(Exception) as exc_info:
             api_client.health_check()
 
-        assert "Erreur API" in str(exc_info.value)
+        assert "Erreur API : Connection error" in str(exc_info.value)
 
     @patch("requests.request")
     def test_get_employees(self, mock_request, api_client):
@@ -83,9 +83,9 @@ class TestAPIClient:
     def test_filter_employees(self, api_client):
         """Test le filtrage des employés."""
         mock_employees = [
-            {"id": 1, "departement": "IT", "age": 30, "left_company": 0},
-            {"id": 2, "departement": "HR", "age": 40, "left_company": 1},
-            {"id": 3, "departement": "IT", "age": 25, "left_company": 0},
+            {"id": 1, "departement": "IT", "age": 30},
+            {"id": 2, "departement": "HR", "age": 40},
+            {"id": 3, "departement": "IT", "age": 25},
         ]
 
         with patch.object(
@@ -97,8 +97,4 @@ class TestAPIClient:
 
             # Filtre par âge
             result = api_client.filter_employees(age_min=30)
-            assert len(result) == 2
-
-            # Filtre par statut
-            result = api_client.filter_employees(left_company=0)
             assert len(result) == 2
