@@ -2,7 +2,9 @@
 
 API FastAPI pour la prédiction d'attrition des employés avec machine learning.
 
-**Stack** : FastAPI · PostgreSQL · SQLAlchemy · Streamlit · Scikit-learn · Docker
+**Stack** : FastAPI · PostgreSQL/SQLite · SQLAlchemy · Streamlit · Scikit-learn · Docker
+
+**Déploiement** : GitHub Actions · Hugging Face Spaces · CI/CD
 
 ## Démarrage Rapide
 
@@ -126,12 +128,60 @@ api-attrition/
 └── data/                       # Dataset CSV (294 employés)
 ```
 
+## 🚀 Déploiement sur Hugging Face Spaces
+
+L'application est automatiquement déployée sur HF Spaces via GitHub Actions.
+
+### Configuration (première fois)
+
+1. **Créer un token Hugging Face**
+   - Allez sur https://huggingface.co/settings/tokens
+   - Créez un token avec permission **Write**
+   - Copiez le token (format: `hf_xxxxxxxxxxxxx`)
+
+2. **Ajouter le token dans GitHub Secrets**
+   - Allez dans Settings → Secrets and variables → Actions
+   - Créez un secret `HF_TOKEN` avec votre token
+
+3. **Pusher sur main**
+   ```bash
+   git push origin main
+   ```
+
+Le déploiement se fait automatiquement ! 🎉
+
+**URL du Space** : https://huggingface.co/spaces/ppluton/api_technova
+
+Voir [.github/DEPLOYMENT.md](.github/DEPLOYMENT.md) pour la documentation complète.
+
+### Base de données : PostgreSQL vs SQLite
+
+L'application supporte deux types de bases de données :
+
+**PostgreSQL** (développement local avec Docker) :
+```bash
+export DB_TYPE=postgres  # ou ne rien définir avec Docker
+docker-compose up -d
+uv run database/import_data.py
+```
+
+**SQLite** (production HF Spaces / développement simple) :
+```bash
+export DB_TYPE=sqlite  # par défaut
+uv run database/migrate_to_sqlite.py  # Génère database.db
+```
+
+La base SQLite (`database.db`) est automatiquement créée et incluse dans le repo pour HF Spaces.
+
 ## Roadmap
 
+- [x] ~~Déploiement cloud (Hugging Face Spaces)~~ ✅
+- [x] ~~Support SQLite pour déploiement cloud~~ ✅
+- [x] ~~CI/CD automatique vers HF Spaces~~ ✅
 - [ ] Modèle ML pour prédiction d'attrition
 - [ ] Endpoint POST /predict
 - [ ] Filtres avancés sur GET /employees
-- [ ] Déploiement cloud (Render/Railway/HF Spaces)
+- [ ] Authentification API (JWT)
 
 ## Tests & CI/CD
 

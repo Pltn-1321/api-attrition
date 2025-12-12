@@ -1,0 +1,174 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Permet le déclenchement manuel
+
+jobs:
+  # Job de tests - doit réussir avant le déploiement
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff black
+
+      - name: Lint with Ruff
+        run: ruff check . --exit-zero
+        continue-on-error: true
+
+      - name: Check formatting with Black
+        run: black --check . --extend-exclude="/(\.git|\.venv|venv|build|dist)/" --line-length=100
+        continue-on-error: true
+
+      - name: Run Streamlit unit tests
+        run: |
+          cd streamlit_app
+          pytest tests/unit/ -v --tb=short
+
+      - name: Run Streamlit functional tests
+        run: |
+          cd streamlit_app
+          pytest tests/functional/ -v --tb=short
+
+  # Job de déploiement - se lance après les tests
+  deploy:
+    name: Deploy to HF Spaces
+    runs-on: ubuntu-latest
+    needs: test  # Attend que les tests réussissent
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # Important pour Git LFS (database.db)
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Hugging Face CLI
+        run: |
+          pip install huggingface_hub
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions Bot"
+
+      - name: Prepare deployment files
+        run: |
+          # Créer un répertoire temporaire pour le déploiement
+          mkdir -p /tmp/hf_deploy
+
+          # Copier tous les fichiers nécessaires
+          cp -r . /tmp/hf_deploy/
+
+          # Copier le README spécifique à HF Spaces
+          cp README_HF.md /tmp/hf_deploy/README.md
+
+          # S'assurer que database.db existe
+          if [ ! -f /tmp/hf_deploy/database.db ]; then
+            echo "⚠️  database.db manquant, génération..."
+            cd /tmp/hf_deploy
+            pip install pandas sqlalchemy
+            python database/migrate_to_sqlite.py
+          fi
+
+          echo "✅ Fichiers préparés pour le déploiement"
+          ls -lah /tmp/hf_deploy/
+
+      - name: Deploy to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          cd /tmp/hf_deploy
+
+          # Se connecter à Hugging Face
+          huggingface-cli login --token $HF_TOKEN --add-to-git-credential
+
+          # Configurer le repo Space (format: spaces/USERNAME/SPACE_NAME)
+          SPACE_REPO="spaces/ppluton/api_technova"
+
+          echo "🚀 Déploiement vers $SPACE_REPO..."
+
+          # Cloner le Space ou créer s'il n'existe pas
+          if huggingface-cli repo-info $SPACE_REPO --token $HF_TOKEN 2>/dev/null; then
+            echo "📥 Space existant, clonage..."
+            git clone https://huggingface.co/$SPACE_REPO hf_space
+          else
+            echo "🆕 Création du nouveau Space..."
+            huggingface-cli repo create api_technova --type space --space_sdk streamlit --token $HF_TOKEN
+            git clone https://huggingface.co/$SPACE_REPO hf_space
+          fi
+
+          # Copier les fichiers dans le repo Space
+          echo "📋 Copie des fichiers..."
+          rsync -av --exclude='.git' --exclude='hf_space' --exclude='.github' \
+                --exclude='__pycache__' --exclude='*.pyc' --exclude='.pytest_cache' \
+                --exclude='docker-compose.yml' --exclude='start.sh' \
+                --exclude='streamlit_launcher.py' --exclude='README_HF.md' \
+                ./ hf_space/
+
+          cd hf_space
+
+          # Configurer Git LFS pour database.db
+          git lfs install
+          git lfs track "*.db"
+
+          # Ajouter tous les fichiers
+          git add .
+
+          # Créer le commit
+          if git diff --staged --quiet; then
+            echo "ℹ️  Aucun changement à déployer"
+          else
+            git commit -m "🚀 Deploy from GitHub Actions - $(date '+%Y-%m-%d %H:%M:%S')"
+
+            # Pousser vers HF Spaces
+            git push https://ppluton:$HF_TOKEN@huggingface.co/$SPACE_REPO main
+
+            echo "✅ Déploiement réussi sur Hugging Face Spaces!"
+            echo "🔗 URL: https://huggingface.co/$SPACE_REPO"
+          fi
+
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "## 🎉 Déploiement réussi!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "L'application a été déployée sur Hugging Face Spaces:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **URL**: https://huggingface.co/spaces/ppluton/api_technova" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏰ **Date**: $(date '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+
+      - name: Deployment failed
+        if: failure()
+        run: |
+          echo "## ❌ Échec du déploiement" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Le déploiement a échoué. Vérifiez les logs ci-dessus." >> $GITHUB_STEP_SUMMARY
