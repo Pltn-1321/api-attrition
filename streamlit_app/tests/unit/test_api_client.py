@@ -41,7 +41,11 @@ class TestAPIClient:
     @patch("requests.request")
     def test_health_check_failure(self, mock_request, api_client):
         """Test le health check avec échec."""
-        mock_request.side_effect = Exception("Connection error")
+        import requests
+
+        mock_request.side_effect = requests.exceptions.RequestException(
+            "Connection error"
+        )
 
         with pytest.raises(Exception) as exc_info:
             api_client.health_check()
