@@ -2,24 +2,36 @@
 
 Ce fichier explique où et comment modifier les paramètres de déploiement.
 
+> ℹ️ **Nouvelle approche** : Le déploiement utilise maintenant un script Python (`deploy_to_hf.py`) au lieu des commandes CLI bash, pour plus de fiabilité et de simplicité !
+
 ## 📍 Où modifier les paramètres
 
 ### 1️⃣ Nom du Space Hugging Face
 
-**Fichier** : `.github/workflows/deploy-hf.yml`
+**Fichier** : `deploy_to_hf.py`
 
-**Ligne 114** :
-```yaml
-SPACE_REPO="spaces/ppluton/api_technova"
+**Lignes 11-13** :
+```python
+HF_USERNAME = "Pedro1321"
+SPACE_NAME = "Api-Technova"
+SPACE_REPO_ID = f"{HF_USERNAME}/{SPACE_NAME}"
 ```
 
+**Valeurs actuelles** :
+- Username: `Pedro1321`
+- Space: `Api-Technova`
+- URL complète: `https://huggingface.co/spaces/Pedro1321/Api-Technova`
+
 **Pour modifier** :
-- Remplacez `ppluton` par votre nom d'utilisateur HF
-- Remplacez `api_technova` par le nom de votre Space
+1. Ouvrir `deploy_to_hf.py`
+2. Remplacer `Pedro1321` par votre nom d'utilisateur HF
+3. Remplacer `Api-Technova` par le nom de votre Space
+4. Le `SPACE_REPO_ID` sera automatiquement généré
 
 **Exemple** :
-```yaml
-SPACE_REPO="spaces/VOTRE_USERNAME/VOTRE_SPACE_NAME"
+```python
+HF_USERNAME = "VOTRE_USERNAME"
+SPACE_NAME = "VOTRE_SPACE_NAME"
 ```
 
 ---
@@ -71,82 +83,49 @@ gh secret set HF_TOKEN --body "VOTRE_TOKEN_ICI"
 
 ---
 
-### 3️⃣ Nom d'utilisateur HF dans le push
+### 3️⃣ SDK du Space (optionnel)
 
-**Fichier** : `.github/workflows/deploy-hf.yml`
+**Fichier** : `deploy_to_hf.py`
 
-**Ligne 152** :
-```yaml
-git push https://ppluton:$HF_TOKEN@huggingface.co/$SPACE_REPO main
+**Ligne 14** :
+```python
+SPACE_SDK = "streamlit"
 ```
 
-**Pour modifier** :
-- Remplacez `ppluton` par votre nom d'utilisateur HF
-
-**Exemple** :
-```yaml
-git push https://VOTRE_USERNAME:$HF_TOKEN@huggingface.co/$SPACE_REPO main
-```
-
----
-
-### 4️⃣ SDK du Space (optionnel)
-
-**Fichier** : `.github/workflows/deploy-hf.yml`
-
-**Ligne 124** :
-```yaml
-huggingface-cli repo create api_technova --type space --space_sdk streamlit --token $HF_TOKEN
-```
-
-**Options pour `--space_sdk`** :
+**Options disponibles** :
 - `streamlit` (actuel, recommandé pour ce projet)
 - `gradio`
 - `docker`
 - `static`
 
-**Pour modifier le nom du Space lors de la création** :
-- Remplacez `api_technova` par le nom souhaité
+**Pour modifier** :
+```python
+SPACE_SDK = "VOTRE_SDK"
+```
 
 ---
 
-### 5️⃣ URL du Space dans la documentation
+### 4️⃣ URL du Space dans la documentation (optionnel)
 
-**Fichiers à modifier** :
+**Fichiers à modifier si vous voulez mettre à jour la documentation** :
 
 1. **README.md** (ligne 151)
-   ```markdown
-   **URL du Space** : https://huggingface.co/spaces/ppluton/api_technova
-   ```
+2. **CI-CD.md** (plusieurs lignes)
+3. **.github/DEPLOYMENT.md**
+4. **.github/workflows/deploy-hf.yml** (ligne 95)
 
-2. **CI-CD.md** (ligne 204)
-   ```markdown
-   - URL du Space : https://huggingface.co/spaces/ppluton/api_technova
-   ```
+**Valeurs actuelles** :
+- Username: `Pedro1321`
+- Space: `Api-Technova`
+- URL: `https://huggingface.co/spaces/Pedro1321/Api-Technova`
 
-3. **CI-CD.md** (ligne 272)
-   ```markdown
-   4. **Live** : Application accessible sur https://huggingface.co/spaces/ppluton/api_technova
-   ```
-
-4. **.github/DEPLOYMENT.md** (ligne 103)
-   ```markdown
-   🔗 **URL**: https://huggingface.co/spaces/ppluton/api_technova
-   ```
-
-**Remplacer** partout :
-```
-ppluton/api_technova
-```
-
-par :
-```
-VOTRE_USERNAME/VOTRE_SPACE_NAME
-```
+**Pour modifier** : Utiliser la fonction rechercher/remplacer dans votre éditeur :
+- Rechercher : `ppluton/api_technova` ou `Pedro1321/Api-Technova`
+- Remplacer par : `VOTRE_USERNAME/VOTRE_SPACE_NAME`
 
 ---
 
-### 6️⃣ README Hugging Face
+### 5️⃣ README Hugging Face
 
 **Fichier** : `README_HF.md`
 
@@ -170,9 +149,15 @@ Avant de déployer, vérifiez que vous avez :
 - [ ] Créé un compte Hugging Face
 - [ ] Généré un token HF avec permission **Write**
 - [ ] Ajouté le token dans GitHub Secrets (`HF_TOKEN`)
-- [ ] Modifié `SPACE_REPO` dans `.github/workflows/deploy-hf.yml`
-- [ ] Modifié le username dans la commande `git push`
+- [ ] Configuré le username et le nom du Space dans `deploy_to_hf.py` (lignes 11-13)
+- [ ] Généré le fichier `database.db` (via `uv run python database/migrate_to_sqlite.py`)
 - [ ] (Optionnel) Mis à jour les URLs dans la documentation
+
+**Configuration actuelle** :
+- ✅ Username: `Pedro1321`
+- ✅ Space: `Api-Technova`
+- ✅ SDK: `streamlit`
+- ✅ Script de déploiement: `deploy_to_hf.py`
 
 ---
 
@@ -188,34 +173,54 @@ Avant de déployer, vérifiez que vous avez :
 ```bash
 # Vérifier que le token HF fonctionne
 export HF_TOKEN="votre_token_ici"
-pip install huggingface_hub[cli]
-huggingface-cli whoami --token $HF_TOKEN
+pip install huggingface_hub
+python deploy_to_hf.py
 ```
 
-Devrait afficher votre nom d'utilisateur HF.
+Le script affichera toutes les étapes du déploiement.
+
+**Test rapide sans déploiement** :
+```bash
+# Tester l'authentification
+export HF_TOKEN="votre_token_ici"
+python -c "from huggingface_hub import login; login(token='$HF_TOKEN'); print('✅ Authentification réussie!')"
+```
 
 ---
 
 ## 🚨 Erreurs courantes
 
-### Erreur : "huggingface-cli: command not found"
-**Solution** : Le workflow a été corrigé pour installer `huggingface_hub[cli]`
+### Erreur : "ModuleNotFoundError: No module named 'huggingface_hub'"
+**Solution** :
+```bash
+pip install huggingface_hub
+```
 
 ### Erreur : "Invalid credentials" ou "401 Unauthorized"
 **Solutions** :
 1. Vérifiez que `HF_TOKEN` est bien configuré dans GitHub Secrets
 2. Vérifiez que le token a la permission **Write**
 3. Régénérez un nouveau token si nécessaire
+4. Testez localement: `export HF_TOKEN="..." && python deploy_to_hf.py`
 
-### Erreur : "Space not found"
+### Erreur : "Space not found" ou "Repository not found"
 **Solutions** :
-1. Vérifiez que le nom du Space est correct dans `SPACE_REPO`
-2. Le workflow créera automatiquement le Space s'il n'existe pas
+1. Vérifiez le nom du Space dans `deploy_to_hf.py` (lignes 11-13)
+2. Le script créera automatiquement le Space s'il n'existe pas
+3. Vérifiez que votre username HF est correct
 
-### Erreur : "Permission denied"
+### Erreur : "Permission denied" lors du push Git
 **Solutions** :
-1. Vérifiez que le username dans `git push` est le bon
+1. Vérifiez que le token a la permission **Write**
 2. Vérifiez que le token n'a pas expiré
+3. Testez l'authentification: `python -c "from huggingface_hub import login; login('votre_token')"`
+
+### Erreur : "database.db not found"
+**Solution** :
+```bash
+# Générer la base de données
+uv run python database/migrate_to_sqlite.py
+```
 
 ---
 
