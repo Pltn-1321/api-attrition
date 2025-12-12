@@ -1,0 +1,2 @@
+# Dépendances système pour Hugging Face Spaces
+# Liste vide - aucune dépendance système requise pour cette application

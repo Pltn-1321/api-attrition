@@ -9,13 +9,34 @@ Pipeline CI/CD automatisée avec GitHub Actions pour garantir la qualité du cod
 ## Architecture de la Pipeline
 
 ```
-Push/PR → Lint & Tests → Build → Déploiement (manuel)
-          │
-          ├─ Ruff (linting)
-          ├─ Black (formatage)
-          ├─ Tests unitaires (8 tests)
-          ├─ Tests fonctionnels (5 tests)
-          └─ Coverage report
+┌─────────────────────────────────────────────────────────────┐
+│                     Push vers dev/main                       │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  Lint & Tests (Job 1)                        │
+│  ├─ Ruff (linting)                                           │
+│  ├─ Black (formatage)                                        │
+│  ├─ Tests unitaires (8 tests)                               │
+│  ├─ Tests fonctionnels (5 tests)                            │
+│  └─ Coverage report → Codecov                               │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ↓
+                ┌──────┴──────┐
+                │             │
+         (si dev)         (si main)
+                │             │
+                ↓             ↓
+           ┌─────┐    ┌──────────────────┐
+           │ Fin │    │ Deploy HF Spaces │
+           └─────┘    │   (Job 2)        │
+                      │  - Préparation    │
+                      │  - Git LFS        │
+                      │  - Push to HF     │
+                      │  - Notification   │
+                      └──────────────────┘
 ```
 
 ## Tests Implémentés
@@ -134,29 +155,142 @@ on:
 9. **Coverage** : Génère le rapport de couverture
 10. **Upload** : Envoie le rapport vers Codecov
 
-### Job 2 : `build`
+### Job 2 : `build` (workflow streamlit.yml)
 
 **Condition** : Uniquement si `lint-and-test` réussit + push sur `main`
 
 **Action** : Message de confirmation pour déploiement manuel
 
+## Déploiement Automatique sur Hugging Face Spaces
+
+### Fichier : `.github/workflows/deploy-hf.yml`
+
+Pipeline de déploiement automatique vers Hugging Face Spaces après validation des tests.
+
+**Déclencheurs** :
+- Push sur `main` (automatique)
+- Déclenchement manuel via `workflow_dispatch`
+
+### Job 1 : `test`
+
+Exécute les mêmes tests que le workflow Streamlit avant le déploiement :
+1. Tests de linting (Ruff)
+2. Tests de formatage (Black)
+3. Tests unitaires (8 tests)
+4. Tests fonctionnels (5 tests)
+
+**Sécurité** : Le déploiement ne se lance que si tous les tests passent ✅
+
+### Job 2 : `deploy`
+
+**Condition** : Uniquement si le job `test` réussit
+
+**Étapes détaillées** :
+
+1. **Checkout avec Git LFS**
+   ```yaml
+   - uses: actions/checkout@v4
+     with:
+       lfs: true  # Important pour database.db
+   ```
+
+2. **Installation Hugging Face CLI**
+   ```bash
+   pip install huggingface_hub
+   ```
+
+3. **Préparation des fichiers**
+   - Copie tous les fichiers dans `/tmp/hf_deploy`
+   - Remplace `README.md` par `README_HF.md` (avec metadata HF)
+   - Vérifie/génère `database.db` si manquant
+   - Exclut les fichiers non nécessaires (Docker, .github, etc.)
+
+4. **Authentification HF**
+   - Utilise le secret `HF_TOKEN` depuis GitHub Secrets
+   - Se connecte via `huggingface-cli login`
+
+5. **Configuration Git LFS**
+   ```bash
+   git lfs install
+   git lfs track "*.db"
+   ```
+
+6. **Déploiement**
+   - Clone le Space HF ou le crée s'il n'existe pas
+   - Copie les fichiers avec `rsync`
+   - Commit et push vers `spaces/ppluton/api_technova`
+
+7. **Notification**
+   - Affiche un résumé du déploiement dans GitHub Actions
+   - URL du Space : https://huggingface.co/spaces/ppluton/api_technova
+
+### Configuration requise
+
+**GitHub Secrets** :
+| Secret | Valeur | Utilisation |
+|--------|--------|-------------|
+| `HF_TOKEN` | Token Hugging Face (write) | Authentification pour pusher vers le Space |
+
+**Création du token** :
+1. https://huggingface.co/settings/tokens
+2. Créer un token avec permission **Write**
+3. Ajouter dans GitHub → Settings → Secrets → `HF_TOKEN`
+
+### Fichiers spécifiques HF Spaces
+
+| Fichier | Description |
+|---------|-------------|
+| `app.py` | Point d'entrée - Lance FastAPI + Streamlit |
+| `requirements.txt` | Dépendances fusionnées (API + Streamlit) |
+| `packages.txt` | Dépendances système (vide pour ce projet) |
+| `README_HF.md` | README avec metadata YAML pour HF |
+| `.gitattributes` | Configuration Git LFS pour fichiers binaires |
+| `database.db` | Base SQLite (tracké via Git LFS) |
+
+### Architecture déployée sur HF Spaces
+
+```
+Container HF Spaces (Port 7860 exposé)
+├── FastAPI (Port 8000 interne)
+│   ├── SQLite (database.db)
+│   └── API REST endpoints
+│
+└── Streamlit (Port 7860)
+    ├── Interface web
+    └── Communique avec API via localhost:8000
+```
+
+**Variables d'environnement auto-configurées** :
+- `DB_TYPE=sqlite` (force SQLite au lieu de PostgreSQL)
+- `API_URL=http://localhost:8000` (Streamlit → API)
+
 ## Stratégie de Branches
 
 ```
-main (production)
+main (production) → Déploiement auto HF Spaces
   ↑
-  PR (avec CI/CD)
+  PR (avec CI/CD : tests obligatoires)
   ↑
 dev (développement, CI/CD active)
   ↑
 feature branches
 ```
 
-**Workflow** :
-1. Développement sur `dev` → CI/CD vérifie les tests
-2. PR vers `main` → CI/CD vérifie à nouveau
-3. Merge → Job `build` se déclenche
-4. Déploiement manuel vers Hugging Face Spaces
+**Workflow complet** :
+1. **Développement** : `feature-branch` → `dev`
+   - CI/CD vérifie les tests sur `dev`
+   - Pas de déploiement
+
+2. **Review** : `dev` → PR vers `main`
+   - CI/CD vérifie à nouveau les tests
+   - Review obligatoire
+
+3. **Production** : Merge vers `main`
+   - CI/CD exécute les tests
+   - ✅ Si tests OK → Déploiement automatique vers HF Spaces
+   - ❌ Si tests KO → Déploiement bloqué
+
+4. **Live** : Application accessible sur https://huggingface.co/spaces/ppluton/api_technova
 
 ## Résolution de Problèmes
 
@@ -211,12 +345,15 @@ uv run ruff check streamlit_app/
 
 ## Améliorations Futures
 
+- [x] ~~Déploiement automatique sur Hugging Face Spaces~~ ✅ **Implémenté**
 - [ ] Tests d'intégration avec API réelle (Docker Compose dans CI)
 - [ ] Tests E2E avec Selenium/Playwright
-- [ ] Déploiement automatique sur Hugging Face Spaces (via webhook)
 - [ ] Tests de performance (temps de chargement des pages)
 - [ ] Tests de sécurité (Bandit, Safety)
 - [ ] Matrix testing (Python 3.10, 3.11, 3.12)
+- [ ] Notifications Slack/Discord pour les déploiements
+- [ ] Environnements de staging (preview deployments)
+- [ ] Rollback automatique en cas d'erreur
 
 ## Bonnes Pratiques Appliquées
 
