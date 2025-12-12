@@ -1,0 +1,14 @@
+[theme]
+# Thème personnalisé - Bleu nuit + Corail
+primaryColor = "#FF6B6B"        # Corail (boutons, liens)
+backgroundColor = "#16213E"      # Bleu nuit (fond principal)
+secondaryBackgroundColor = "#1A1A2E"  # Bleu nuit foncé (sidebar, cards)
+textColor = "#FFFFFF"            # Blanc (texte)
+font = "sans serif"
+
+[server]
+headless = true
+port = 8501
+
+[browser]
+gatherUsageStats = false
