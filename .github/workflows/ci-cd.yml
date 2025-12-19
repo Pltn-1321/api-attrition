@@ -1,15 +1,27 @@
-name: Deploy to Hugging Face Spaces
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch: # Permet le déclenchement manuel
+    branches: [main, dev]
+    paths:
+      - 'streamlit_app.py'
+      - 'config.py'
+      - 'pages/**'
+      - 'utils/**'
+      - 'tests/**'
+      - '.streamlit/**'
+      - 'main.py'
+      - 'api/**'
+      - 'database/**'
+      - 'requirements.txt'
+      - '.github/workflows/ci-cd.yml'
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
 
 jobs:
-  # Job de tests - doit réussir avant le déploiement
   test:
-    name: Run Tests
+    name: Tests & Quality
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Cache pip dependencies
         uses: actions/cache@v4
@@ -43,47 +55,49 @@ jobs:
         run: black --check . --extend-exclude="/(\.git|\.venv|venv|build|dist)/" --line-length=100
         continue-on-error: true
 
-      - name: Run Streamlit unit tests
-        run: |
-          cd streamlit_app
-          pytest tests/unit/ -v --tb=short
+      - name: Run unit tests
+        run: pytest tests/unit/ -v --tb=short
 
-      - name: Run Streamlit functional tests
-        run: |
-          cd streamlit_app
-          pytest tests/functional/ -v --tb=short
+      - name: Run functional tests
+        run: pytest tests/functional/ -v --tb=short
 
-  # Job de déploiement - se lance après les tests
+      - name: Generate coverage report
+        run: pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-api-attrition
+          fail_ci_if_error: false
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+
   deploy:
-    name: Deploy to HF Spaces
+    name: Deploy to Hugging Face Spaces
     runs-on: ubuntu-latest
-    needs: test # Attend que les tests réussissent
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          lfs: true # Important pour Git LFS (database.db)
+          lfs: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Push to Hugging Face Spaces
+        uses: nateraw/huggingface-sync-action@v0.0.4
         with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: |
-          pip install -U "huggingface_hub[cli]"
-
-      - name: Configure Git
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "GitHub Actions Bot"
-
-      - name: Deploy using Python script
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          python deploy_to_hf.py
+          github_repo_id: ${{ github.repository }}
+          huggingface_repo_id: Pedro1321/Api-Technova
+          repo_type: space
+          space_sdk: streamlit
+          hf_token: ${{ secrets.HF_TOKEN }}
 
       - name: Deployment summary
         if: success()

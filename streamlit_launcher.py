@@ -54,7 +54,7 @@ def main():
 
     # Chemins
     main_py = os.path.join(script_dir, "main.py")
-    app_path = os.path.join(script_dir, "streamlit_app", "app.py")
+    app_path = os.path.join(script_dir, "streamlit_app.py")
 
     # Vérifier que les fichiers existent
     if not os.path.exists(main_py):

@@ -1,5 +1,8 @@
 # API Attrition
 
+[![codecov](https://codecov.io/gh/Pltn-1321/api-attrition/branch/main/graph/badge.svg)](https://codecov.io/gh/Pltn-1321/api-attrition)
+[![CI/CD](https://github.com/Pltn-1321/api-attrition/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/Pltn-1321/api-attrition/actions)
+
 API FastAPI pour la prédiction d'attrition des employés avec machine learning.
 
 **Stack** : FastAPI · PostgreSQL/SQLite · SQLAlchemy · Streamlit · Scikit-learn · Docker
@@ -42,7 +45,7 @@ uv run streamlit_launcher.py
 
 # Ou séparément
 uv run uvicorn main:app --reload --port 8000  # API seulement
-cd streamlit_app && uv run streamlit run app.py  # Interface seulement
+uv run streamlit run streamlit_app.py  # Interface seulement
 ```
 
 ### Arrêter l'application
@@ -185,18 +188,42 @@ La base SQLite (`database.db`) est automatiquement créée et incluse dans le re
 
 ## Tests & CI/CD
 
+### Lancer les tests
+
 ```bash
-# Lancer tous les tests
-pytest
+# Lancer tous les tests (13 tests)
+pytest tests/
 
 # Tests unitaires (8 tests)
-pytest streamlit_app/tests/unit -v
+pytest tests/unit -v
 
 # Tests fonctionnels (5 tests)
-pytest streamlit_app/tests/functional -v
+pytest tests/functional -v
 
-# Avec coverage
-pytest streamlit_app/tests --cov=streamlit_app/utils
+# Avec coverage (rapport dans le terminal)
+pytest tests/ --cov=. --cov-report=term-missing
 ```
+
+### Rapports de couverture
+
+**Local** :
+```bash
+# Générer rapport HTML
+pytest tests/ --cov=. --cov-report=html
+
+# Ouvrir le rapport
+open htmlcov/index.html  # macOS
+```
+
+**CI/CD** :
+- Badge de couverture visible en haut du README
+- Rapport détaillé sur [Codecov](https://codecov.io/gh/Pltn-1321/api-attrition)
+- Rapport HTML téléchargeable dans les artifacts GitHub Actions
+
+### Pipeline automatique
+
+Le workflow CI/CD (`ci-cd.yml`) s'exécute automatiquement :
+- **Sur push/PR** : Lint + Tests + Coverage
+- **Sur push `main`** : + Déploiement vers Hugging Face Spaces
 
 **Documentation complète** : [CI-CD.md](CI-CD.md) - Architecture, stratégie de tests, pipeline GitHub Actions
