@@ -34,40 +34,71 @@ EXPECTED_SKLEARN_VERSION = "1.7.1"
 model = None
 model_error = None
 
-print(f"🔍 Tentative de chargement du modèle ML...")
-print(f"   📦 Scikit-learn version: {sklearn.__version__}")
+print("=" * 60)
+print("🚀 INITIALISATION API FASTAPI - DÉMARRAGE")
+print("=" * 60)
+print(f"📦 Scikit-learn version: {sklearn.__version__}")
+print(f"🐍 Version Python: {os.sys.version}")
+print(f"📂 Répertoire de travail: {os.getcwd()}")
+
+print(f"\n🔍 DIAGNOSTIC MODÈLE ML:")
+print(f"   📂 Chemin relatif: {MODEL_PATH}")
+print(f"   📍 Chemin absolu: {os.path.abspath(MODEL_PATH)}")
+print(f"   📊 Taille fichier: {os.path.getsize(MODEL_PATH) if os.path.exists(MODEL_PATH) else 'N/A'} octets")
+print(f"   {'✅' if os.path.exists(MODEL_PATH) else '❌'} Fichier existe: {os.path.exists(MODEL_PATH)}")
 
 # Vérifier la compatibilité de version avant de charger
-if sklearn.__version__ != EXPECTED_SKLEARN_VERSION:
+version_compatible = sklearn.__version__ == EXPECTED_SKLEARN_VERSION
+print(f"   {'✅' if version_compatible else '❌'} Version compatible: {version_compatible}")
+print(f"   📌 Attendue: {EXPECTED_SKLEARN_VERSION}")
+print(f"   📌 Installée: {sklearn.__version__}")
+
+if not version_compatible:
     model_error = f"Version de scikit-learn incompatible. Attendue: {EXPECTED_SKLEARN_VERSION}, installée: {sklearn.__version__}"
     print(f"   ❌ {model_error}")
+elif not os.path.exists(MODEL_PATH):
+    model_error = f"Fichier modèle non trouvé: {MODEL_PATH}"
+    print(f"   ❌ {model_error}")
+    print(f"   📁 Contenu du répertoire courant:")
+    try:
+        for item in os.listdir(os.getcwd()):
+            print(f"      - {item}")
+        if os.path.exists("data"):
+            print(f"   📁 Contenu du répertoire data/:")
+            for item in os.listdir("data"):
+                print(f"      - {item}")
+                if item == "export-api" and os.path.exists("data/export-api"):
+                    for subitem in os.listdir("data/export-api"):
+                        print(f"         - {subitem}")
+    except Exception as e:
+        print(f"      Erreur listage: {e}")
 else:
-    print(f"   ✅ Version sklearn compatible: {sklearn.__version__}")
-    print(f"   📂 Chemin: {MODEL_PATH}")
-    print(f"   📍 Chemin absolu: {os.path.abspath(MODEL_PATH)}")
-    print(
-        f"   {'✅' if os.path.exists(MODEL_PATH) else '❌'} Fichier existe: {os.path.exists(MODEL_PATH)}"
-    )
+    print(f"   ⏳ Tentative de chargement du modèle...")
+    try:
+        model = joblib.load(MODEL_PATH)
+        model_error = None
+        print(f"   ✅ Modèle chargé avec succès!")
+        print(f"   📊 Type: {type(model)}")
+        if hasattr(model, 'named_steps'):
+            print(f"   🔧 Pipeline steps: {list(model.named_steps.keys())}")
+        elif hasattr(model, 'estimators_'):
+            print(f"   🤖 Type: Ensemble (RandomForest/GradientBoosting)")
+        else:
+            print(f"   📊 Type estimateur: {type(model).__name__}")
+    except Exception as e:
+        model_error = str(e)
+        print(f"   ❌ ERREUR CRITIQUE lors du chargement: {e}")
+        print(f"   📝 Type d'erreur: {type(e).__name__}")
+        import traceback
+        print(f"   📋 Traceback complet:")
+        traceback.print_exc()
 
-    if os.path.exists(MODEL_PATH):
-        try:
-            model = joblib.load(MODEL_PATH)
-            print(f"   ✅ Modèle chargé avec succès")
-        except Exception as e:
-            model_error = str(e)
-            print(f"   ❌ Erreur lors du chargement: {e}")
-            print(f"   Type d'erreur: {type(e).__name__}")
-    else:
-        model_error = f"Fichier non trouvé: {MODEL_PATH}"
-        print(f"   ❌ {model_error}")
-        print(f"   📁 Contenu du répertoire data/:")
-        try:
-            data_dir = os.path.join(os.path.dirname(__file__), "data")
-            if os.path.exists(data_dir):
-                for item in os.listdir(data_dir):
-                    print(f"      - {item}")
-        except Exception as e:
-            print(f"      Erreur listage: {e}")
+print(f"\n📋 ÉTAT FINAL AU DÉMARRAGE:")
+print(f"   {'✅' if model is not None else '❌'} Modèle chargé: {model is not None}")
+print(f"   {'✅' if model_error is None else '❌'} Erreurs: {model_error is not None}")
+if model_error:
+    print(f"   📝 Détail erreur: {model_error}")
+print("=" * 60)
 
 # Configuration CORS
 app.add_middleware(
@@ -100,6 +131,17 @@ async def model_status():
     """
     Retourne l'état du modèle ML pour diagnostic.
     """
+    global model, model_error
+
+    # Tenter de recharger le modèle si pas chargé
+    if model is None and os.path.exists(MODEL_PATH):
+        try:
+            model = joblib.load(MODEL_PATH)
+            model_error = None
+            print(f"🔄 Modèle rechargé avec succès via /model-status")
+        except Exception as e:
+            model_error = str(e)
+
     return {
         "model_loaded": model is not None,
         "model_path": MODEL_PATH,
@@ -107,6 +149,9 @@ async def model_status():
         "model_file_exists": os.path.exists(MODEL_PATH),
         "model_error": model_error,
         "model_size_bytes": os.path.getsize(MODEL_PATH) if os.path.exists(MODEL_PATH) else None,
+        "sklearn_version": sklearn.__version__,
+        "expected_sklearn_version": EXPECTED_SKLEARN_VERSION,
+        "version_compatible": sklearn.__version__ == EXPECTED_SKLEARN_VERSION,
     }
 
 
@@ -183,11 +228,31 @@ async def predict_attrition(request: PredictionRequest):
     Cette endpoint utilise un modèle de machine learning pour prédire
     la probabilité qu'un employé quitte l'entreprise.
     """
+    global model, model_error
+
     if model is None:
         detail_message = "Modèle de prédiction non disponible"
         if model_error:
             detail_message += f". Erreur de chargement: {model_error}"
-        raise HTTPException(status_code=503, detail=detail_message)
+
+        # Essayer de recharger le modèle une dernière fois
+        try:
+            model = joblib.load(MODEL_PATH)
+            model_error = None
+            print(f"🔄 Modèle rechargé avec succès lors de la prédiction")
+        except Exception as retry_error:
+            model_error = str(retry_error)
+            print(f"❌ Échec rechargement modèle: {retry_error}")
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": detail_message,
+                    "model_path": MODEL_PATH,
+                    "model_exists": os.path.exists(MODEL_PATH),
+                    "sklearn_version": sklearn.__version__,
+                    "retry_error": str(retry_error)
+                }
+            )
 
     try:
         # Convertir les données de la requête en DataFrame pandas
