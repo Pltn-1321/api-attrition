@@ -17,7 +17,7 @@ Employee attrition prediction platform with FastAPI backend and Streamlit fronte
 - `database/config.py` - Database connection management with dual backend support
 
 **Frontend (Streamlit)**:
-- `streamlit_app.py` - Main entry point (home page)
+- `app.py` - Main entry point (home page)
 - `pages/` - Multi-page app structure (Explorer, Recherche, Statistiques)
 - `utils/api_client.py` - HTTP client for API communication
 - `utils/ui_components.py` - Reusable Streamlit components
@@ -55,7 +55,7 @@ uv run streamlit_launcher.py
 uv run uvicorn main:app --reload --port 8000
 
 # Streamlit only (requires API running)
-uv run streamlit run streamlit_app.py
+uv run streamlit run app.py
 ```
 
 ### Database Setup
@@ -108,17 +108,18 @@ black --check . --line-length=100
 
 ## CI/CD Pipeline
 
-Two GitHub Actions workflows:
+Single unified GitHub Actions workflow:
 
-1. **`streamlit.yml`** - Runs on pushes to `streamlit_app.py`, `config.py`, `pages/**`, `utils/**`, `tests/**`
-   - Linting (Ruff, Black)
-   - Unit + functional tests
-   - Coverage reports to Codecov
+**`ci-cd.yml`** - Runs on pushes to `app.py`, `config.py`, `pages/**`, `utils/**`, `tests/**`
 
-2. **`deploy-hf.yml`** - Runs on push to `main`
-   - Runs all tests first
-   - Deploys to Hugging Face Spaces via `deploy_to_hf.py`
-   - Requires `HF_TOKEN` secret in GitHub
+**Job `test`** (runs always):
+- Linting (Ruff, Black)
+- Unit + functional tests
+- Coverage reports to Codecov
+
+**Job `deploy`** (runs only on push to `main`):
+- Deploys to Hugging Face Spaces via git push
+- Requires `HF_TOKEN` secret in GitHub
 
 ## Key Implementation Patterns
 
@@ -136,7 +137,7 @@ else:
 ### Streamlit Multi-Page App
 
 Pages follow Streamlit's naming convention:
-- `streamlit_app.py` - Home page (no number prefix)
+- `app.py` - Home page (no number prefix)
 - `pages/1_📊_Explorer.py` - Auto-discovered, appears in sidebar
 - `pages/2_🔍_Recherche.py`
 - `pages/3_📈_Statistiques.py`
@@ -145,7 +146,7 @@ All pages import shared utilities from `utils/` and config from `config.py` (bot
 
 ### API Client Singleton Pattern
 
-The API client is initialized once in `streamlit_app.py` session state:
+The API client is initialized once in `app.py` session state:
 
 ```python
 if "api_client" not in st.session_state:

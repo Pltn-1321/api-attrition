@@ -45,7 +45,7 @@ uv run streamlit_launcher.py
 
 # Ou séparément
 uv run uvicorn main:app --reload --port 8000  # API seulement
-uv run streamlit run streamlit_app.py  # Interface seulement
+uv run streamlit run app.py  # Interface seulement
 ```
 
 ### Arrêter l'application
