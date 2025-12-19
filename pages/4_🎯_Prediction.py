@@ -279,64 +279,26 @@ def render_risk_factors_analysis(employee_data: dict, prediction_data: dict):
         st.markdown(f"#### {category_titles.get(category, category.capitalize())}")
 
         for factor in factors:
-            # Couleur selon le poids
-            if factor["weight"] >= 0.18:
-                bg_color = "#f8d7da"  # rouge
-                border_color = "#dc3545"
-            elif factor["weight"] >= 0.12:
-                bg_color = "#fff3cd"  # jaune
-                border_color = "#ffc107"
-            else:
-                bg_color = "#d1ecf1"  # bleu
-                border_color = "#17a2b8"
-
-            # Barre de poids visuel
+            # Déterminer le type de message selon le poids
             weight_percent = factor["weight"] * 100
 
-            html_factor = f"""
-            <div style="
-                margin: 10px 0;
-                padding: 15px;
-                background: {bg_color};
-                border-radius: 8px;
-                border-left: 4px solid {border_color};
-                position: relative;
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>{factor['icon']} {factor['title']}</strong><br>
-                        <small style="color: #666;">{factor['description']}</small>
-                    </div>
-                    <div style="
-                        background: {border_color};
-                        color: white;
-                        padding: 2px 8px;
-                        border-radius: 12px;
-                        font-size: 11px;
-                        font-weight: bold;
-                    ">
-                        {weight_percent:.0f}%
-                    </div>
-                </div>
-                <div style="
-                    margin-top: 8px;
-                    height: 4px;
-                    background: rgba(0,0,0,0.1);
-                    border-radius: 2px;
-                ">
-                    <div style="
-                        width: {weight_percent}%;
-                        height: 100%;
-                        background: {border_color};
-                        border-radius: 2px;
-                    "></div>
-                </div>
-            </div>
-            """
+            # Créer un conteneur avec colonnes pour l'affichage
+            col1, col2 = st.columns([4, 1])
 
-            # Utiliser un conteneur explicite pour éviter l'échappement HTML
-            with st.container():
-                st.markdown(html_factor, unsafe_allow_html=True)
+            with col1:
+                # Afficher le titre et la description
+                st.markdown(f"**{factor['icon']} {factor['title']}**")
+                st.caption(factor["description"])
+
+            with col2:
+                # Afficher le poids en pourcentage
+                st.metric("Impact", f"{weight_percent:.0f}%")
+
+            # Barre de progression selon le poids
+            st.progress(factor["weight"])
+
+            # Espaceur entre les facteurs
+            st.markdown("")
 
 
 def get_personalized_recommendations(employee_data: dict, prediction_data: dict):
