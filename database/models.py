@@ -1,11 +1,13 @@
 from sqlalchemy import Column, Integer, String, Float, BigInteger
 from database.config import Base
 
+
 class Employee(Base):
     """
     Modèle SQLAlchemy pour la table employees.
     Représente un employé avec toutes ses caractéristiques.
     """
+
     __tablename__ = "employees"
 
     # Identifiant

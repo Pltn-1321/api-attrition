@@ -5,9 +5,7 @@ from typing import Dict, Any, Optional
 from config import COLORS
 
 
-def render_metric_card(
-    title: str, value: Any, delta: Optional[str] = None, icon: str = "📊"
-):
+def render_metric_card(title: str, value: Any, delta: Optional[str] = None, icon: str = "📊"):
     """
     Affiche une carte de métrique stylisée.
 
@@ -125,32 +123,26 @@ def render_prediction_card(prediction_data: Dict[str, Any]):
         prediction_data: Résultats de la prédiction contenant attrition_risk,
                         attrition_probability, prediction, risk_level
     """
-    risk_level = prediction_data.get('risk_level', 'Inconnu')
-    risk_percentage = prediction_data.get('attrition_risk', 0)
-    probability = prediction_data.get('attrition_probability', 0)
-    prediction = prediction_data.get('prediction', 0)
+    risk_level = prediction_data.get("risk_level", "Inconnu")
+    risk_percentage = prediction_data.get("attrition_risk", 0)
+    probability = prediction_data.get("attrition_probability", 0)
+    prediction = prediction_data.get("prediction", 0)
 
     # Couleurs selon le niveau de risque
     risk_colors = {
-        'Faible': {'bg': '#d4edda', 'border': '#28a745', 'text': '#155724'},
-        'Moyen': {'bg': '#fff3cd', 'border': '#ffc107', 'text': '#856404'},
-        'Élevé': {'bg': '#f8d7da', 'border': '#dc3545', 'text': '#721c24'},
-        'Très élevé': {'bg': '#f5c6cb', 'border': '#bd2130', 'text': '#721c24'},
-        'Inconnu': {'bg': '#e2e3e5', 'border': '#6c757d', 'text': '#383d41'}
+        "Faible": {"bg": "#d4edda", "border": "#28a745", "text": "#155724"},
+        "Moyen": {"bg": "#fff3cd", "border": "#ffc107", "text": "#856404"},
+        "Élevé": {"bg": "#f8d7da", "border": "#dc3545", "text": "#721c24"},
+        "Très élevé": {"bg": "#f5c6cb", "border": "#bd2130", "text": "#721c24"},
+        "Inconnu": {"bg": "#e2e3e5", "border": "#6c757d", "text": "#383d41"},
     }
 
-    colors = risk_colors.get(risk_level, risk_colors['Inconnu'])
+    colors = risk_colors.get(risk_level, risk_colors["Inconnu"])
 
     # Icône selon le niveau de risque
-    risk_icons = {
-        'Faible': '😊',
-        'Moyen': '😐',
-        'Élevé': '😟',
-        'Très élevé': '😱',
-        'Inconnu': '❓'
-    }
+    risk_icons = {"Faible": "😊", "Moyen": "😐", "Élevé": "😟", "Très élevé": "😱", "Inconnu": "❓"}
 
-    icon = risk_icons.get(risk_level, '❓')
+    icon = risk_icons.get(risk_level, "❓")
 
     prediction_text = "Risque élevé de départ" if prediction == 1 else "Risque faible de départ"
 
@@ -218,16 +210,16 @@ def render_risk_gauge(risk_percentage: float, risk_level: str):
     """
     # Déterminer la couleur et la position selon le risque
     if risk_percentage < 30:
-        color = '#28a745'  # vert
+        color = "#28a745"  # vert
         position = risk_percentage
     elif risk_percentage < 60:
-        color = '#ffc107'  # jaune
+        color = "#ffc107"  # jaune
         position = risk_percentage
     elif risk_percentage < 80:
-        color = '#fd7e14'  # orange
+        color = "#fd7e14"  # orange
         position = risk_percentage
     else:
-        color = '#dc3545'  # rouge
+        color = "#dc3545"  # rouge
         position = risk_percentage
 
     # S'assurer que la position est dans les bornes 0-100%
@@ -281,24 +273,19 @@ def render_employee_search():
 
     with col1:
         search_type = st.selectbox(
-            "Type de recherche",
-            ["ID Employé", "Nom/Poste/Département"],
-            key="search_type"
+            "Type de recherche", ["ID Employé", "Nom/Poste/Département"], key="search_type"
         )
 
     with col2:
         if search_type == "ID Employé":
             search_value = st.number_input(
-                "ID de l'employé",
-                min_value=1,
-                step=1,
-                key="employee_id_search"
+                "ID de l'employé", min_value=1, step=1, key="employee_id_search"
             )
         else:
             search_value = st.text_input(
                 "Rechercher par nom, poste ou département",
                 placeholder="Ex: Tech Lead, Consulting, Homme...",
-                key="employee_name_search"
+                key="employee_name_search",
             )
 
     return search_type, search_value

@@ -43,9 +43,7 @@ class TestAPIClient:
         """Test le health check avec échec."""
         import requests
 
-        mock_request.side_effect = requests.exceptions.RequestException(
-            "Connection error"
-        )
+        mock_request.side_effect = requests.exceptions.RequestException("Connection error")
 
         with pytest.raises(Exception) as exc_info:
             api_client.health_check()
@@ -92,9 +90,7 @@ class TestAPIClient:
             {"id": 3, "departement": "IT", "age": 25},
         ]
 
-        with patch.object(
-            api_client, "get_employees", return_value={"employees": mock_employees}
-        ):
+        with patch.object(api_client, "get_employees", return_value={"employees": mock_employees}):
             # Filtre par département
             result = api_client.filter_employees(departement="IT")
             assert len(result) == 2

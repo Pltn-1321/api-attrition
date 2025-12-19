@@ -44,7 +44,7 @@ def sample_employee_data_low_risk() -> Dict[str, Any]:
         "nombre_participation_pee": 3,
         "parent_burnout": 0,
         "sous_paye_niveau_dept": 0,
-        "augementation_salaire_precedente": 15
+        "augementation_salaire_precedente": 15,
     }
 
 
@@ -85,7 +85,7 @@ def sample_employee_data_high_risk() -> Dict[str, Any]:
         "nombre_participation_pee": 0,
         "parent_burnout": 4,
         "sous_paye_niveau_dept": 1,
-        "augementation_salaire_precedente": 3
+        "augementation_salaire_precedente": 3,
     }
 
 
@@ -126,7 +126,7 @@ def sample_employee_data_medium_risk() -> Dict[str, Any]:
         "nombre_participation_pee": 1,
         "parent_burnout": 2,
         "sous_paye_niveau_dept": 1,
-        "augementation_salaire_precedente": 8
+        "augementation_salaire_precedente": 8,
     }
 
 
@@ -137,7 +137,7 @@ def prediction_response_low_risk() -> Dict[str, Any]:
         "attrition_risk": 11.48,
         "attrition_probability": 0.1148,
         "prediction": 0,
-        "risk_level": "Faible"
+        "risk_level": "Faible",
     }
 
 
@@ -148,14 +148,16 @@ def prediction_response_high_risk() -> Dict[str, Any]:
         "attrition_risk": 89.73,
         "attrition_probability": 0.8973,
         "prediction": 1,
-        "risk_level": "Très élevé"
+        "risk_level": "Très élevé",
     }
 
 
 @pytest.fixture
 def ml_model():
     """Charge le modèle ML pour les tests."""
-    model_path = os.path.join(os.path.dirname(__file__), "..", "data", "export-api", "attrition_model.joblib")
+    model_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", "export-api", "attrition_model.joblib"
+    )
 
     # Si le modèle n'existe pas, créer un mock
     if not os.path.exists(model_path):
@@ -169,6 +171,7 @@ def ml_model():
 def mock_api_client():
     """Mock du client API pour les tests."""
     from unittest.mock import MagicMock
+
     mock_client = MagicMock()
 
     # Configurer les réponses par défaut
@@ -209,22 +212,22 @@ def list_employees_data():
             "poste": "Tech Lead",
             "departement": "Consulting",
             "domaine_etude": "Infra & Cloud",
-            "age": 35
+            "age": 35,
         },
         {
             "id": 2,
             "poste": "Consultant",
             "departement": "Commercial",
             "domaine_etude": "Marketing",
-            "age": 28
+            "age": 28,
         },
         {
             "id": 3,
             "poste": "Senior Manager",
             "departement": "Consulting",
             "domaine_etude": "Transformation Digitale",
-            "age": 32
-        }
+            "age": 32,
+        },
     ]
 
 
@@ -239,14 +242,16 @@ def mock_streamlit():
     """Mock des fonctions Streamlit pour les tests."""
     from unittest.mock import patch
 
-    with patch('streamlit.markdown') as mock_markdown, \
-         patch('streamlit.success') as mock_success, \
-         patch('streamlit.error') as mock_error, \
-         patch('streamlit.info') as mock_info:
+    with (
+        patch("streamlit.markdown") as mock_markdown,
+        patch("streamlit.success") as mock_success,
+        patch("streamlit.error") as mock_error,
+        patch("streamlit.info") as mock_info,
+    ):
 
         yield {
-            'markdown': mock_markdown,
-            'success': mock_success,
-            'error': mock_error,
-            'info': mock_info
+            "markdown": mock_markdown,
+            "success": mock_success,
+            "error": mock_error,
+            "info": mock_info,
         }

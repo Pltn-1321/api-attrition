@@ -1,0 +1,62 @@
+# Configuration Ruff pour le projet API Attrition
+
+# Lignes de code à ignorer
+line-length = 100
+
+# Exclusions
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+    "htmlcov",
+    ".mypy_cache",
+    "venv",
+    "env",
+]
+
+[lint]
+# Sélection des règles
+select = [
+    # pycodestyle (E, W)
+    "E",
+    "W",
+    # Pyflakes (F)
+    "F",
+    # flake8-bugbear (B)
+    "B",
+    # flake8-comprehensions (C4)
+    "C4",
+    # Pycodestyle warnings (E4, E7, E9)
+    "E4",
+    "E7",
+    "E9",
+]
+
+# Ignorer certaines règles spécifiques
+ignore = [
+    # E501: Line too long (accepter les lignes plus longues pour la lisibilité)
+    "E501",
+    # B008: Do not perform function call `Depends` in argument defaults (FastAPI pattern)
+    "B008",
+    # B904: Within an except clause, raise exceptions with from err (style choice)
+    "B904",
+    # W292: No newline at end of file (optionnel)
+    "W292",
+    # F401: Module imported but unused (ignoré pour les tests et migrations)
+    "F401",
+    # F541: f-string without any placeholders (parfois utilisé pour la cohérence)
+    "F541",
+    # F841: Local variable is assigned to but never used (parfois nécessaire dans les tests)
+    "F841",
+]
+
+[lint.per-file-ignores]
+# Tests: ignorer les imports non utilisés et variables locales
+"tests/*" = ["F401", "F841", "F541"]
+# Scripts de migration: ignorer les imports non utilisés
+"database/migrate_to_sqlite.py" = ["F401", "F541"]
+# Modèles: parfois des imports pour compatibilité
+"database/models.py" = ["F401"]
+# Pages Streamlit: parfois des imports pour compatibilité
+"pages/*" = ["F401"]

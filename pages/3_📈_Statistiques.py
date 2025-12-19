@@ -82,9 +82,7 @@ try:
             st.plotly_chart(fig1, use_container_width=True)
 
             # Revenu moyen par département
-            dept_salary = (
-                df.groupby("departement")["revenu_mensuel"].mean().reset_index()
-            )
+            dept_salary = df.groupby("departement")["revenu_mensuel"].mean().reset_index()
 
             fig2 = px.bar(
                 dept_salary,
@@ -149,9 +147,7 @@ try:
 
             with col2:
                 # Revenu moyen par département
-                dept_salary = (
-                    df.groupby("departement")["revenu_mensuel"].mean().reset_index()
-                )
+                dept_salary = df.groupby("departement")["revenu_mensuel"].mean().reset_index()
 
                 fig7 = px.bar(
                     dept_salary,
@@ -202,9 +198,7 @@ try:
                 color="satisfaction_moyenne",
                 color_continuous_scale=["#FF6B6B", "#4ECDC4"],
             )
-            fig9.add_hline(
-                y=2.5, line_dash="dash", line_color="white", annotation_text="Moyenne"
-            )
+            fig9.add_hline(y=2.5, line_dash="dash", line_color="white", annotation_text="Moyenne")
             st.plotly_chart(fig9, use_container_width=True)
 
             # Répartition de la satisfaction

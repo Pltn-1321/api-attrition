@@ -67,9 +67,7 @@ try:
             filtered_df = filtered_df[filtered_df["departement"].isin(departements)]
 
         # Filtre âge
-        filtered_df = filtered_df[
-            (filtered_df["age"] >= age_min) & (filtered_df["age"] <= age_max)
-        ]
+        filtered_df = filtered_df[(filtered_df["age"] >= age_min) & (filtered_df["age"] <= age_max)]
 
         # Affichage des résultats
         st.subheader(f"📋 Résultats ({len(filtered_df)} employés)")
@@ -96,9 +94,9 @@ try:
             display_df["revenu_mensuel"] = display_df["revenu_mensuel"].apply(
                 lambda x: f"{x:,.0f} €".replace(",", " ")
             )
-            display_df["satisfaction_moyenne"] = display_df[
-                "satisfaction_moyenne"
-            ].apply(lambda x: f"{x:.1f}/4" if pd.notna(x) else "N/A")
+            display_df["satisfaction_moyenne"] = display_df["satisfaction_moyenne"].apply(
+                lambda x: f"{x:.1f}/4" if pd.notna(x) else "N/A"
+            )
 
             # Renommer les colonnes pour l'affichage
             display_df = display_df.rename(

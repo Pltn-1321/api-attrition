@@ -15,15 +15,12 @@ if DB_TYPE == "sqlite":
     DATABASE_URL = f"sqlite:///{SQLITE_DB}"
     # SQLite nécessite check_same_thread=False pour FastAPI
     engine = create_engine(
-        DATABASE_URL,
-        connect_args={"check_same_thread": False},
-        pool_pre_ping=True
+        DATABASE_URL, connect_args={"check_same_thread": False}, pool_pre_ping=True
     )
 else:
     # PostgreSQL - pour environnement Docker local
     DATABASE_URL = os.getenv(
-        "DATABASE_URL",
-        "postgresql://attrition_user:attrition_pass@localhost:5432/attrition_db"
+        "DATABASE_URL", "postgresql://attrition_user:attrition_pass@localhost:5432/attrition_db"
     )
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
@@ -32,6 +29,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base pour les modèles
 Base = declarative_base()
+
 
 # Fonction de dépendance pour obtenir la session de base de données
 def get_db():

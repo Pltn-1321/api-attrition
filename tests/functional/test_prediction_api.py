@@ -2,8 +2,8 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
-import json
+from unittest.mock import patch
+from main import app
 
 
 class TestPredictionAPI:
@@ -46,8 +46,9 @@ class TestPredictionAPI:
 
     @pytest.mark.api
     @pytest.mark.functional
-    def test_predict_endpoint_different_risk_levels(self, sample_employee_data_low_risk,
-                                                    sample_employee_data_high_risk):
+    def test_predict_endpoint_different_risk_levels(
+        self, sample_employee_data_low_risk, sample_employee_data_high_risk
+    ):
         """Test prédictions avec différents niveaux de risque."""
         # Test profil faible risque
         response_low = self.client.post("/predict", json=sample_employee_data_low_risk)
@@ -66,17 +67,16 @@ class TestPredictionAPI:
     @pytest.mark.functional
     def test_predict_endpoint_minimal_data(self):
         """Test avec des données minimales valides."""
-        minimal_data = {
-            "age": 30,
-            "revenu_mensuel": 3000,
-            "satisfaction_moyenne": 3.0
-        }
+        minimal_data = {"age": 30, "revenu_mensuel": 3000, "satisfaction_moyenne": 3.0}
 
         response = self.client.post("/predict", json=minimal_data)
         assert response.status_code == 200
         data = response.json()
 
-        assert all(key in data for key in ["attrition_risk", "attrition_probability", "prediction", "risk_level"])
+        assert all(
+            key in data
+            for key in ["attrition_risk", "attrition_probability", "prediction", "risk_level"]
+        )
 
     @pytest.mark.api
     @pytest.mark.functional
@@ -94,7 +94,9 @@ class TestPredictionAPI:
         """Test avec JSON invalide."""
         invalid_json = "{ invalid json }"
 
-        response = self.client.post("/predict", data=invalid_json, headers={"Content-Type": "application/json"})
+        response = self.client.post(
+            "/predict", data=invalid_json, headers={"Content-Type": "application/json"}
+        )
         assert response.status_code == 422  # Validation error
 
     @pytest.mark.api
@@ -108,7 +110,7 @@ class TestPredictionAPI:
     @pytest.mark.functional
     def test_predict_endpoint_missing_model(self):
         """Test quand le modèle n'est pas disponible."""
-        with patch('main.model', None):
+        with patch("main.model", None):
             response = self.client.post("/predict", json={"age": 30})
             assert response.status_code == 503
             assert "Modèle de prédiction non disponible" in response.json()["detail"]
@@ -172,7 +174,9 @@ class TestPredictionAPI:
         first_result = results[0]
         for result in results[1:]:
             # Les probabilités devraient être très similaires
-            assert abs(result["attrition_probability"] - first_result["attrition_probability"]) < 1e-10
+            assert (
+                abs(result["attrition_probability"] - first_result["attrition_probability"]) < 1e-10
+            )
 
     @pytest.mark.api
     @pytest.mark.functional
@@ -193,7 +197,9 @@ class TestPredictionAPI:
 
         # Chaque prédiction devrait prendre moins de 100ms en moyenne
         avg_time_per_prediction = total_time / 100
-        assert avg_time_per_prediction < 0.1, f"Trop lent: {avg_time_per_prediction:.3f}s par prédiction"
+        assert (
+            avg_time_per_prediction < 0.1
+        ), f"Trop lent: {avg_time_per_prediction:.3f}s par prédiction"
 
     @pytest.mark.api
     @pytest.mark.functional
@@ -205,7 +211,7 @@ class TestPredictionAPI:
             "domaine_etude": "Informatique & Mathématiques",
             "statut_marital": "Célibataire (divorcé)",
             "age": 30,
-            "revenu_mensuel": 3500
+            "revenu_mensuel": 3500,
         }
 
         response = self.client.post("/predict", json=special_char_data)
@@ -215,11 +221,7 @@ class TestPredictionAPI:
     @pytest.mark.functional
     def test_predict_numeric_precision(self):
         """Test la précision numérique des résultats."""
-        precise_data = {
-            "satisfaction_moyenne": 2.718281828,
-            "revenu_mensuel": 3333.33,
-            "age": 33
-        }
+        precise_data = {"satisfaction_moyenne": 2.718281828, "revenu_mensuel": 3333.33, "age": 33}
 
         response = self.client.post("/predict", json=precise_data)
         assert response.status_code == 200
@@ -231,4 +233,4 @@ class TestPredictionAPI:
 
         # Pas de NaN ou inf
         assert data["attrition_probability"] == data["attrition_probability"]  # Pas de NaN
-        assert abs(data["attrition_probability"]) < float('inf')  # Pas de inf
+        assert abs(data["attrition_probability"]) < float("inf")  # Pas de inf

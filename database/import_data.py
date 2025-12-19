@@ -4,9 +4,7 @@ from sqlalchemy import create_engine
 # Ton import actuel
 df = pd.read_csv("data/export-api/test_employees.csv")
 df.insert(0, "id", range(1, len(df) + 1))
-engine = create_engine(
-    "postgresql://attrition_user:attrition_pass@localhost:5432/attrition_db"
-)
+engine = create_engine("postgresql://attrition_user:attrition_pass@localhost:5432/attrition_db")
 df.to_sql("employees", engine, if_exists="replace", index=False)
 
 print(f"✅ {len(df)} employés importés dans PostgreSQL")

@@ -2,6 +2,7 @@
 Script de migration des données CSV vers SQLite.
 Utilise SQLAlchemy pour créer la base de données et les tables.
 """
+
 import os
 import sys
 import pandas as pd
@@ -65,48 +66,52 @@ def migrate_to_sqlite():
         db = SessionLocal()
 
         # Ajouter un ID auto-incrémenté si non présent
-        if 'id' not in df.columns:
-            df.insert(0, 'id', range(1, len(df) + 1))
+        if "id" not in df.columns:
+            df.insert(0, "id", range(1, len(df) + 1))
 
         # Convertir le DataFrame en objets Employee
         employees = []
         for _, row in df.iterrows():
             employee = Employee(
-                id=row.get('id'),
-                genre=row.get('genre'),
-                age=row.get('age'),
-                statut_marital=row.get('statut_marital'),
-                ayant_enfants=row.get('ayant_enfants'),
-                distance_domicile_travail=row.get('distance_domicile_travail'),
-                niveau_education=row.get('niveau_education'),
-                poste=row.get('poste'),
-                domaine_etude=row.get('domaine_etude'),
-                departement=row.get('departement'),
-                niveau_hierarchique_poste=row.get('niveau_hierarchique_poste'),
-                nombre_experiences_precedentes=row.get('nombre_experiences_precedentes'),
-                annee_experience_totale=row.get('annee_experience_totale'),
-                annees_dans_l_entreprise=row.get('annees_dans_l_entreprise'),
-                annees_dans_le_poste_actuel=row.get('annees_dans_le_poste_actuel'),
-                annees_depuis_la_derniere_promotion=row.get('annees_depuis_la_derniere_promotion'),
-                annes_sous_responsable_actuel=row.get('annes_sous_responsable_actuel'),
-                nombre_employee_sous_responsabilite=row.get('nombre_employee_sous_responsabilite'),
-                revenu_mensuel=row.get('revenu_mensuel'),
-                heure_supplementaires=row.get('heure_supplementaires'),
-                nombre_heures_travailless=row.get('nombre_heures_travailless'),
-                distance_categorie=row.get('distance_categorie'),
-                frequence_deplacement=row.get('frequence_deplacement'),
-                satisfaction_employee_environnement=row.get('satisfaction_employee_environnement'),
-                satisfaction_employee_nature_travail=row.get('satisfaction_employee_nature_travail'),
-                satisfaction_employee_equipe=row.get('satisfaction_employee_equipe'),
-                satisfaction_employee_equilibre_pro_perso=row.get('satisfaction_employee_equilibre_pro_perso'),
-                satisfaction_moyenne=row.get('satisfaction_moyenne'),
-                note_evaluation_precedente=row.get('note_evaluation_precedente'),
-                note_evaluation_actuelle=row.get('note_evaluation_actuelle'),
-                nb_formations_suivies=row.get('nb_formations_suivies'),
-                nombre_participation_pee=row.get('nombre_participation_pee'),
-                parent_burnout=row.get('parent_burnout'),
-                sous_paye_niveau_dept=row.get('sous_paye_niveau_dept'),
-                augementation_salaire_precedente=row.get('augementation_salaire_precedente')
+                id=row.get("id"),
+                genre=row.get("genre"),
+                age=row.get("age"),
+                statut_marital=row.get("statut_marital"),
+                ayant_enfants=row.get("ayant_enfants"),
+                distance_domicile_travail=row.get("distance_domicile_travail"),
+                niveau_education=row.get("niveau_education"),
+                poste=row.get("poste"),
+                domaine_etude=row.get("domaine_etude"),
+                departement=row.get("departement"),
+                niveau_hierarchique_poste=row.get("niveau_hierarchique_poste"),
+                nombre_experiences_precedentes=row.get("nombre_experiences_precedentes"),
+                annee_experience_totale=row.get("annee_experience_totale"),
+                annees_dans_l_entreprise=row.get("annees_dans_l_entreprise"),
+                annees_dans_le_poste_actuel=row.get("annees_dans_le_poste_actuel"),
+                annees_depuis_la_derniere_promotion=row.get("annees_depuis_la_derniere_promotion"),
+                annes_sous_responsable_actuel=row.get("annes_sous_responsable_actuel"),
+                nombre_employee_sous_responsabilite=row.get("nombre_employee_sous_responsabilite"),
+                revenu_mensuel=row.get("revenu_mensuel"),
+                heure_supplementaires=row.get("heure_supplementaires"),
+                nombre_heures_travailless=row.get("nombre_heures_travailless"),
+                distance_categorie=row.get("distance_categorie"),
+                frequence_deplacement=row.get("frequence_deplacement"),
+                satisfaction_employee_environnement=row.get("satisfaction_employee_environnement"),
+                satisfaction_employee_nature_travail=row.get(
+                    "satisfaction_employee_nature_travail"
+                ),
+                satisfaction_employee_equipe=row.get("satisfaction_employee_equipe"),
+                satisfaction_employee_equilibre_pro_perso=row.get(
+                    "satisfaction_employee_equilibre_pro_perso"
+                ),
+                satisfaction_moyenne=row.get("satisfaction_moyenne"),
+                note_evaluation_precedente=row.get("note_evaluation_precedente"),
+                note_evaluation_actuelle=row.get("note_evaluation_actuelle"),
+                nb_formations_suivies=row.get("nb_formations_suivies"),
+                nombre_participation_pee=row.get("nombre_participation_pee"),
+                parent_burnout=row.get("parent_burnout"),
+                sous_paye_niveau_dept=row.get("sous_paye_niveau_dept"),
+                augementation_salaire_precedente=row.get("augementation_salaire_precedente"),
             )
             employees.append(employee)
 
@@ -125,6 +130,7 @@ def migrate_to_sqlite():
     except Exception as e:
         print(f"❌ Erreur lors de l'insertion des données: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

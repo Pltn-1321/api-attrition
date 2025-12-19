@@ -55,7 +55,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync
-          uv add --dev pytest-cov pytest-mock httpx
+          uv add --dev pytest-cov pytest-mock httpx ruff black
 
       - name: Lint with Ruff
         run: uv run ruff check . --output-format=github

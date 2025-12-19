@@ -18,9 +18,7 @@ class APIClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = 10
 
-    def _make_request(
-        self, method: str, endpoint: str, **kwargs
-    ) -> Optional[Dict[str, Any]]:
+    def _make_request(self, method: str, endpoint: str, **kwargs) -> Optional[Dict[str, Any]]:
         """
         Effectue une requête HTTP vers l'API.
 
@@ -157,12 +155,14 @@ class APIClient:
             full_name = f"{employee.get('poste', '')} {employee.get('departement', '')}".lower()
 
             # Recherche dans plusieurs champs
-            searchable_text = " ".join([
-                str(employee.get('poste', '')),
-                str(employee.get('departement', '')),
-                str(employee.get('domaine_etude', '')),
-                str(employee.get('statut_marital', ''))
-            ]).lower()
+            searchable_text = " ".join(
+                [
+                    str(employee.get("poste", "")),
+                    str(employee.get("departement", "")),
+                    str(employee.get("domaine_etude", "")),
+                    str(employee.get("statut_marital", "")),
+                ]
+            ).lower()
 
             if name_lower in searchable_text or name_lower in full_name:
                 filtered.append(employee)

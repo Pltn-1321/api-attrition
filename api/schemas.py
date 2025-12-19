@@ -1,8 +1,10 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
+
 class EmployeeBase(BaseModel):
     """Schéma de base pour un employé."""
+
     genre: Optional[str] = None
     age: Optional[int] = None
     statut_marital: Optional[str] = None
@@ -38,19 +40,25 @@ class EmployeeBase(BaseModel):
     sous_paye_niveau_dept: Optional[int] = None
     augementation_salaire_precedente: Optional[int] = None
 
+
 class EmployeeResponse(EmployeeBase):
     """Schéma de réponse pour un employé (inclut l'ID)."""
+
     id: int
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class EmployeeListResponse(BaseModel):
     """Schéma de réponse pour une liste d'employés."""
+
     total: int
     employees: list[EmployeeResponse]
 
+
 class PredictionRequest(BaseModel):
     """Schéma pour les données de prédiction d'attrition."""
+
     genre: Optional[str] = None
     age: Optional[int] = None
     statut_marital: Optional[str] = None
@@ -86,14 +94,18 @@ class PredictionRequest(BaseModel):
     sous_paye_niveau_dept: Optional[int] = None
     augementation_salaire_precedente: Optional[int] = None
 
+
 class PredictionResponse(BaseModel):
     """Schéma de réponse pour la prédiction d'attrition."""
+
     attrition_risk: float
     attrition_probability: float
     prediction: int
     risk_level: str
 
+
 class HealthResponse(BaseModel):
     """Schéma de réponse pour le health check."""
+
     status: str
     database: str

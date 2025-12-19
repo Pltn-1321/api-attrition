@@ -23,9 +23,7 @@ if "api_client" not in st.session_state:
 
 # Header
 st.title(f"{APP_ICON} API Attrition - Dashboard")
-st.markdown(
-    "### Bienvenue sur le tableau de bord de prédiction d'attrition des employés"
-)
+st.markdown("### Bienvenue sur le tableau de bord de prédiction d'attrition des employés")
 
 st.markdown("---")
 
@@ -69,19 +67,15 @@ with st.spinner("🔄 Connexion à l'API..."):
 
                 # Calculer des statistiques moyennes
                 avg_age = (
-                    sum(emp.get("age", 0) for emp in employees) / len(employees)
-                    if employees
-                    else 0
+                    sum(emp.get("age", 0) for emp in employees) / len(employees) if employees else 0
                 )
                 avg_satisfaction = (
-                    sum(emp.get("satisfaction_moyenne", 0) for emp in employees)
-                    / len(employees)
+                    sum(emp.get("satisfaction_moyenne", 0) for emp in employees) / len(employees)
                     if employees
                     else 0
                 )
                 avg_revenue = (
-                    sum(emp.get("revenu_mensuel", 0) for emp in employees)
-                    / len(employees)
+                    sum(emp.get("revenu_mensuel", 0) for emp in employees) / len(employees)
                     if employees
                     else 0
                 )
@@ -110,9 +104,7 @@ with st.spinner("🔄 Connexion à l'API..."):
                     )
 
             except Exception as e:
-                show_error(
-                    f"Erreur lors de la récupération des statistiques : {str(e)}"
-                )
+                show_error(f"Erreur lors de la récupération des statistiques : {str(e)}")
 
     except Exception as e:
         show_error(f"Impossible de se connecter à l'API : {str(e)}")

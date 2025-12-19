@@ -14,10 +14,12 @@ import socket
 api_process = None
 streamlit_process = None
 
+
 def check_port_available(port):
     """Vérifie si un port est disponible"""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) != 0
+        return s.connect_ex(("localhost", port)) != 0
+
 
 def signal_handler(_sig, _frame):
     """Gère l'arrêt propre des processus"""
@@ -41,6 +43,7 @@ def signal_handler(_sig, _frame):
 
     print("👋 Services arrêtés proprement\n")
     sys.exit(0)
+
 
 def main():
     global api_process, streamlit_process
@@ -92,7 +95,7 @@ def main():
             ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", str(API_PORT)],
             cwd=script_dir,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
         print(f"   ✅ API démarrée sur http://localhost:{API_PORT}")
         print(f"   📖 Documentation: http://localhost:{API_PORT}/docs")
@@ -110,11 +113,20 @@ def main():
     print(f"\n🎨 Démarrage de l'interface Streamlit sur le port {STREAMLIT_PORT}...")
     try:
         streamlit_process = subprocess.Popen(
-            ["streamlit", "run", app_path, "--server.port", str(STREAMLIT_PORT),
-             "--server.address", "0.0.0.0", "--server.headless", "true"],
+            [
+                "streamlit",
+                "run",
+                app_path,
+                "--server.port",
+                str(STREAMLIT_PORT),
+                "--server.address",
+                "0.0.0.0",
+                "--server.headless",
+                "true",
+            ],
             cwd=script_dir,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
         print(f"   ✅ Streamlit démarré sur http://localhost:{STREAMLIT_PORT}")
 
@@ -142,6 +154,7 @@ def main():
         streamlit_process.wait()
     except KeyboardInterrupt:
         signal_handler(signal.SIGINT, None)
+
 
 if __name__ == "__main__":
     main()

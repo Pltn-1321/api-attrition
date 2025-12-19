@@ -67,27 +67,21 @@ if search_button or employee_id:
                     with col1:
                         st.metric("Genre", employee.get("genre", "N/A"))
                         st.metric("Âge", employee.get("age", "N/A"))
-                        st.metric(
-                            "Statut Marital", employee.get("statut_marital", "N/A")
-                        )
+                        st.metric("Statut Marital", employee.get("statut_marital", "N/A"))
                     with col2:
                         st.metric("Enfants", employee.get("ayant_enfants", "N/A"))
                         st.metric(
                             "Distance Domicile",
                             f"{employee.get('distance_domicile_travail', 'N/A')} km",
                         )
-                        st.metric(
-                            "Niveau Éducation", employee.get("niveau_education", "N/A")
-                        )
+                        st.metric("Niveau Éducation", employee.get("niveau_education", "N/A"))
 
                 with tab2:
                     col1, col2 = st.columns(2)
                     with col1:
                         st.metric("Poste", employee.get("poste", "N/A"))
                         st.metric("Département", employee.get("departement", "N/A"))
-                        st.metric(
-                            "Domaine d'étude", employee.get("domaine_etude", "N/A")
-                        )
+                        st.metric("Domaine d'étude", employee.get("domaine_etude", "N/A"))
                     with col2:
                         st.metric(
                             "Revenu Mensuel",
