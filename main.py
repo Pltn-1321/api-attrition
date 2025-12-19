@@ -44,8 +44,12 @@ print(f"📂 Répertoire de travail: {os.getcwd()}")
 print(f"\n🔍 DIAGNOSTIC MODÈLE ML:")
 print(f"   📂 Chemin relatif: {MODEL_PATH}")
 print(f"   📍 Chemin absolu: {os.path.abspath(MODEL_PATH)}")
-print(f"   📊 Taille fichier: {os.path.getsize(MODEL_PATH) if os.path.exists(MODEL_PATH) else 'N/A'} octets")
-print(f"   {'✅' if os.path.exists(MODEL_PATH) else '❌'} Fichier existe: {os.path.exists(MODEL_PATH)}")
+print(
+    f"   📊 Taille fichier: {os.path.getsize(MODEL_PATH) if os.path.exists(MODEL_PATH) else 'N/A'} octets"
+)
+print(
+    f"   {'✅' if os.path.exists(MODEL_PATH) else '❌'} Fichier existe: {os.path.exists(MODEL_PATH)}"
+)
 
 # Vérifier la compatibilité de version avant de charger
 version_compatible = sklearn.__version__ == EXPECTED_SKLEARN_VERSION
@@ -79,9 +83,9 @@ else:
         model_error = None
         print(f"   ✅ Modèle chargé avec succès!")
         print(f"   📊 Type: {type(model)}")
-        if hasattr(model, 'named_steps'):
+        if hasattr(model, "named_steps"):
             print(f"   🔧 Pipeline steps: {list(model.named_steps.keys())}")
-        elif hasattr(model, 'estimators_'):
+        elif hasattr(model, "estimators_"):
             print(f"   🤖 Type: Ensemble (RandomForest/GradientBoosting)")
         else:
             print(f"   📊 Type estimateur: {type(model).__name__}")
@@ -90,6 +94,7 @@ else:
         print(f"   ❌ ERREUR CRITIQUE lors du chargement: {e}")
         print(f"   📝 Type d'erreur: {type(e).__name__}")
         import traceback
+
         print(f"   📋 Traceback complet:")
         traceback.print_exc()
 
@@ -250,8 +255,8 @@ async def predict_attrition(request: PredictionRequest):
                     "model_path": MODEL_PATH,
                     "model_exists": os.path.exists(MODEL_PATH),
                     "sklearn_version": sklearn.__version__,
-                    "retry_error": str(retry_error)
-                }
+                    "retry_error": str(retry_error),
+                },
             )
 
     try:

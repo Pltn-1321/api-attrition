@@ -132,10 +132,23 @@ def main():
     try:
         # Vérifier que le modèle existe
         model_path = os.path.join(script_dir, "data", "export-api", "attrition_model.joblib")
-        print(f"   🤖 Modèle ML: {'✅ Existe' if os.path.exists(model_path) else '❌ Manquant'} ({model_path})")
+        print(
+            f"   🤖 Modèle ML: {'✅ Existe' if os.path.exists(model_path) else '❌ Manquant'} ({model_path})"
+        )
 
         api_process = subprocess.Popen(
-            ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", str(API_PORT), "--workers", "1", "--log-level", "debug"],
+            [
+                "uvicorn",
+                "main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                str(API_PORT),
+                "--workers",
+                "1",
+                "--log-level",
+                "debug",
+            ],
             cwd=script_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,  # Rediriger stderr vers stdout
@@ -150,7 +163,9 @@ def main():
         print("=" * 50)
 
         # Attendre que l'API soit prête avec retry logic
-        api_ready = wait_for_api(API_PORT, max_retries=45, retry_interval=2)  # Plus de temps pour HF Spaces
+        api_ready = wait_for_api(
+            API_PORT, max_retries=45, retry_interval=2
+        )  # Plus de temps pour HF Spaces
         if not api_ready:
             print("\n⚠️  ERREUR: L'API n'est pas disponible après 45s!")
             print(f"   🔍 Vérification manuelle: curl http://localhost:{API_PORT}/health")

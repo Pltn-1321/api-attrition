@@ -76,13 +76,11 @@ with col3:
         "age": 30,
         "revenu_mensuel": 5000,
         "poste": "Technicien",
-        "departement": "Informatique"
+        "departement": "Informatique",
     }
 
     try:
-        pred_response = requests.post(f"{API_URL}/predict",
-                                    json=test_data,
-                                    timeout=15)
+        pred_response = requests.post(f"{API_URL}/predict", json=test_data, timeout=15)
         if pred_response.status_code == 200:
             pred_data = pred_response.json()
             st.success("✅ Prédiction fonctionnelle")
@@ -112,7 +110,7 @@ with col_info1:
         response = requests.get(f"{API_URL}/", timeout=5)
         latency = (time.time() - start_time) * 1000
         st.success(f"✅ Latence: {latency:.0f}ms")
-    except:
+    except Exception:
         st.error("❌ Pas de connectivité")
 
 with col_info2:
@@ -163,7 +161,8 @@ st.markdown("---")
 st.header("📚 Guide de Dépannage")
 
 with st.expander("🔍 Comment utiliser cette page de diagnostic"):
-    st.markdown("""
+    st.markdown(
+        """
     ### Étapes de diagnostic:
 
     1. **Vérifier API Health**: L'API doit répondre au `/health`
@@ -179,10 +178,12 @@ with st.expander("🔍 Comment utiliser cette page de diagnostic"):
     - Erreur timeout = API pas démarrée
     - Attendez 30-60s après déploiement
     - Vérifiez les logs du conteneur HF Spaces
-    """)
+    """
+    )
 
 with st.expander("📋 Logs HF Spaces"):
-    st.markdown("""
+    st.markdown(
+        """
     ### Pour voir les logs sur Hugging Face Spaces:
 
     1. Allez sur votre espace HF Spaces
@@ -197,8 +198,11 @@ with st.expander("📋 Logs HF Spaces"):
     - `ModuleNotFoundError`: dépendance manquante
     - `FileNotFoundError`: fichier modèle manquant
     - `Version incompatible`: sklearn version incorrecte
-    """)
+    """
+    )
 
 # Footer
 st.markdown("---")
-st.markdown("🔧 Page de diagnostic - utilisez cette page pour identifier les problèmes sur HF Spaces")
+st.markdown(
+    "🔧 Page de diagnostic - utilisez cette page pour identifier les problèmes sur HF Spaces"
+)
