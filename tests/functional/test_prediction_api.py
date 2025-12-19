@@ -113,10 +113,17 @@ class TestPredictionAPI:
     @pytest.mark.functional
     def test_predict_endpoint_missing_model(self):
         """Test quand le modèle n'est pas disponible."""
-        with patch("main.model", None):
+        with patch("main.model", None), patch("joblib.load") as mock_load:
+            mock_load.side_effect = Exception("Erreur de chargement simulée")
             response = self.client.post("/predict", json={"age": 30})
             assert response.status_code == 503
-            assert "Modèle de prédiction non disponible" in response.json()["detail"]
+            error_detail = response.json()
+            # FastAPI imbrique l'erreur dans "detail"
+            assert "detail" in error_detail
+            detail_content = error_detail["detail"]
+            assert "error" in detail_content
+            assert "Modèle de prédiction non disponible" in detail_content["error"]
+            assert "retry_error" in detail_content
 
     @pytest.mark.skip(
         reason="TODO: Corriger la gestion des cas limites d'âge dans l'API (erreur 500)"
