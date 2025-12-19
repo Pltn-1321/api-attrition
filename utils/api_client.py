@@ -120,3 +120,54 @@ class APIClient:
             filtered = [e for e in filtered if e.get("age", 999) <= age_max]
 
         return filtered
+
+    def predict_attrition(self, employee_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Prédit le risque d'attrition pour un employé.
+
+        Args:
+            employee_data: Données de l'employé pour la prédiction
+
+        Returns:
+            Résultats de la prédiction avec risque, probabilité et niveau
+        """
+        return self._make_request("POST", "/predict", json=employee_data)
+
+    def search_employees(self, name: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Recherche des employés par nom (recherche côté client).
+
+        Args:
+            name: Nom ou partie du nom à rechercher
+            limit: Nombre maximum de résultats
+
+        Returns:
+            Liste d'employés correspondant à la recherche
+        """
+        # Récupère tous les employés
+        data = self.get_employees(skip=0, limit=1000)  # Grande limite pour la recherche
+        employees = data.get("employees", [])
+
+        # Recherche insensible à la casse dans le nom et prénom
+        name_lower = name.lower()
+        filtered = []
+
+        for employee in employees:
+            # Combinaison nom/prénom pour la recherche
+            full_name = f"{employee.get('poste', '')} {employee.get('departement', '')}".lower()
+
+            # Recherche dans plusieurs champs
+            searchable_text = " ".join([
+                str(employee.get('poste', '')),
+                str(employee.get('departement', '')),
+                str(employee.get('domaine_etude', '')),
+                str(employee.get('statut_marital', ''))
+            ]).lower()
+
+            if name_lower in searchable_text or name_lower in full_name:
+                filtered.append(employee)
+
+                if len(filtered) >= limit:
+                    break
+
+        return filtered

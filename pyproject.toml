@@ -5,12 +5,16 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.123.10",
+    "httpx>=0.28.1",
+    "joblib>=1.5.3",
     "pandas==2.3.3",
     "plotly==5.18.0",
     "psycopg2-binary>=2.9.11",
     "pytest==7.4.3",
     "pytest-cov==4.1.0",
+    "pytest-mock>=3.15.1",
     "requests==2.31.0",
+    "scikit-learn==1.7.1",
     "sqlalchemy>=2.0.44",
     "streamlit==1.30.0",
     "uvicorn>=0.38.0",

@@ -49,6 +49,80 @@ uv run streamlit_launcher.py
 - API : http://localhost:8000
 - Docs API : http://localhost:8000/docs
 
+## 🧪 Tests
+
+### Structure des Tests
+```
+tests/
+├── unit/                    # Tests unitaires (logique isolée)
+│   └── test_ml_model.py    # Tests modèle ML et calculs
+├── functional/             # Tests fonctionnels (scénarios complets)
+│   └── test_prediction_api.py  # Tests endpoint /predict
+├── conftest.py            # Fixtures partagées
+└── fixtures/              # Données de test
+```
+
+### Exécuter les Tests
+
+```bash
+# Tous les tests avec couverture
+uv run pytest
+
+# Tests unitaires uniquement
+uv run pytest tests/unit/ -v
+
+# Tests fonctionnels uniquement
+uv run pytest tests/functional/ -v
+
+# Tests ML spécifiques
+uv run pytest tests/unit/test_ml_model.py -v --ml
+
+# Tests API
+uv run pytest tests/functional/test_prediction_api.py -v --api
+
+# Rapport de couverture HTML
+uv run pytest --cov=utils --cov=api --cov-report=html
+```
+
+### Types de Tests
+
+#### 🤖 Tests Machine Learning
+- **Chargement du modèle** : Vérifie que `attrition_model.joblib` se charge correctement
+- **Prédictions** : Teste la cohérence des résultats (0/1, probabilités)
+- **Cas limites** : Gestion des valeurs extrêmes et données manquantes
+- **Performance** : Temps de réponse < 100ms par prédiction
+
+#### 🔌 Tests API
+- **Endpoint `/predict`** : Validation des schémas et réponses
+- **Gestion d'erreurs** : Modèle indisponible, données invalides
+- **Concurrence** : Requêtes simultanées sans conflit
+- **Robustesse** : Caractères spéciaux, types de données
+
+#### 📊 Couverture Cible
+- **API endpoints** : 100%
+- **Logique métier** : 95%
+- **Modèle ML** : 90%
+- **Components UI** : 85%
+
+### Fixtures de Test
+
+- `sample_employee_data_low_risk` : Profil employé faible risque
+- `sample_employee_data_high_risk` : Profil employé haut risque
+- `sample_employee_data_medium_risk` : Profil employé risque moyen
+- `ml_model` : Modèle ML chargé pour les tests
+
+### CI/CD Integration
+
+Les tests s'exécutent automatiquement sur :
+- **Push** vers `main`/`dev`
+- **Pull Requests**
+- **Workflow manuel**
+
+Le pipeline génère :
+- Rapports de couverture Codecov
+- Artefacts HTML de couverture
+- Validation qualité (Ruff, Black)
+
 ## Commandes
 
 ### Lancer l'application

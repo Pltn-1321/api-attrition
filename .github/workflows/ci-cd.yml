@@ -14,6 +14,8 @@ on:
       - 'api/**'
       - 'database/**'
       - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'pytest.ini'
       - '.github/workflows/ci-cd.yml'
   pull_request:
     branches: [main, dev]
@@ -24,45 +26,66 @@ jobs:
     name: Tests & Quality
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: ['3.11']
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
-      - name: Cache pip dependencies
+      - name: Cache uv dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-uv-
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install ruff black
+          uv sync
+          uv add --dev pytest-cov pytest-mock httpx
 
       - name: Lint with Ruff
-        run: ruff check . --exit-zero
-        continue-on-error: true
+        run: uv run ruff check . --output-format=github
 
       - name: Check formatting with Black
-        run: black --check . --extend-exclude="/(\.git|\.venv|venv|build|dist)/" --line-length=100
-        continue-on-error: true
+        run: uv run black --check . --line-length=100
 
-      - name: Run unit tests
-        run: pytest tests/unit/ -v --tb=short
+      - name: Run ML Model Tests
+        run: uv run pytest tests/unit/test_ml_model.py -v --tb=short --ml
 
-      - name: Run functional tests
-        run: pytest tests/functional/ -v --tb=short
+      - name: Run API Tests
+        run: uv run pytest tests/functional/test_prediction_api.py -v --tb=short --api
 
-      - name: Generate coverage report
-        run: pytest tests/ --cov=. --cov-report=xml --cov-report=html --cov-report=term-missing
+      - name: Run Unit Tests
+        run: uv run pytest tests/unit/ -v --tb=short --unit
+
+      - name: Run Functional Tests
+        run: uv run pytest tests/functional/ -v --tb=short --functional
+
+      - name: Generate comprehensive coverage report
+        run: |
+          uv run pytest tests/ \
+            --cov=utils \
+            --cov=api \
+            --cov=database \
+            --cov=main \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --cov-fail-under=75
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -74,9 +97,21 @@ jobs:
 
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: coverage-report
+          name: coverage-report-python-${{ matrix.python-version }}
           path: htmlcov/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-python-${{ matrix.python-version }}
+          path: |
+            test-reports/
+            .pytest_cache/
+          retention-days: 7
 
   deploy:
     name: Deploy to Hugging Face Spaces
