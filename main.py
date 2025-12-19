@@ -26,12 +26,35 @@ app = FastAPI(
 
 # Charger le modèle de machine learning
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "data", "export-api", "attrition_model.joblib")
-try:
-    model = joblib.load(MODEL_PATH)
-    print("Modèle chargé avec succès")
-except Exception as e:
-    print(f"Erreur lors du chargement du modèle: {e}")
-    model = None
+model = None
+model_error = None
+
+print(f"🔍 Tentative de chargement du modèle ML...")
+print(f"   📂 Chemin: {MODEL_PATH}")
+print(f"   📍 Chemin absolu: {os.path.abspath(MODEL_PATH)}")
+print(
+    f"   {'✅' if os.path.exists(MODEL_PATH) else '❌'} Fichier existe: {os.path.exists(MODEL_PATH)}"
+)
+
+if os.path.exists(MODEL_PATH):
+    try:
+        model = joblib.load(MODEL_PATH)
+        print(f"   ✅ Modèle chargé avec succès")
+    except Exception as e:
+        model_error = str(e)
+        print(f"   ❌ Erreur lors du chargement: {e}")
+        print(f"   Type d'erreur: {type(e).__name__}")
+else:
+    model_error = f"Fichier non trouvé: {MODEL_PATH}"
+    print(f"   ❌ {model_error}")
+    print(f"   📁 Contenu du répertoire data/:")
+    try:
+        data_dir = os.path.join(os.path.dirname(__file__), "data")
+        if os.path.exists(data_dir):
+            for item in os.listdir(data_dir):
+                print(f"      - {item}")
+    except Exception as e:
+        print(f"      Erreur listage: {e}")
 
 # Configuration CORS
 app.add_middleware(
@@ -56,6 +79,21 @@ async def root():
             "employee_by_id": "/employees/{id}",
             "predict_attrition": "/predict",
         },
+    }
+
+
+@app.get("/model-status")
+async def model_status():
+    """
+    Retourne l'état du modèle ML pour diagnostic.
+    """
+    return {
+        "model_loaded": model is not None,
+        "model_path": MODEL_PATH,
+        "model_path_absolute": os.path.abspath(MODEL_PATH),
+        "model_file_exists": os.path.exists(MODEL_PATH),
+        "model_error": model_error,
+        "model_size_bytes": os.path.getsize(MODEL_PATH) if os.path.exists(MODEL_PATH) else None,
     }
 
 
@@ -133,7 +171,10 @@ async def predict_attrition(request: PredictionRequest):
     la probabilité qu'un employé quitte l'entreprise.
     """
     if model is None:
-        raise HTTPException(status_code=503, detail="Modèle de prédiction non disponible")
+        detail_message = "Modèle de prédiction non disponible"
+        if model_error:
+            detail_message += f". Erreur de chargement: {model_error}"
+        raise HTTPException(status_code=503, detail=detail_message)
 
     try:
         # Convertir les données de la requête en DataFrame pandas
