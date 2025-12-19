@@ -1,4 +1,7 @@
-"""Page d'accueil de l'application Streamlit."""
+"""
+Page d'accueil de l'application Streamlit.
+Application de prédiction d'attrition des employés.
+"""
 
 import streamlit as st
 from utils.api_client import APIClient

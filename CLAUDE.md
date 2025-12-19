@@ -110,16 +110,20 @@ black --check . --line-length=100
 
 Single unified GitHub Actions workflow:
 
-**`ci-cd.yml`** - Runs on pushes to `app.py`, `config.py`, `pages/**`, `utils/**`, `tests/**`
+**`ci-cd.yml`** - Triggers on:
+- **Branches**: `main`, `dev`
+- **Paths**: `app.py`, `config.py`, `pages/**`, `utils/**`, `tests/**`, `.streamlit/**`, `main.py`, `api/**`, `database/**`, `requirements.txt`, `.github/workflows/ci-cd.yml`
+- **Manual**: `workflow_dispatch` (can be triggered manually from GitHub Actions UI)
 
 **Job `test`** (runs always):
 - Linting (Ruff, Black)
-- Unit + functional tests
-- Coverage reports to Codecov
+- Unit + functional tests (13 tests total)
+- Coverage reports to Codecov and artifact upload
 
 **Job `deploy`** (runs only on push to `main`):
 - Deploys to Hugging Face Spaces via git push
 - Requires `HF_TOKEN` secret in GitHub
+- Deployment URL: https://huggingface.co/spaces/Pedro1321/Api-Technova
 
 ## Key Implementation Patterns
 
