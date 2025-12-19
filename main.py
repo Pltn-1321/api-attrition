@@ -36,34 +36,38 @@ model_error = None
 
 print(f"🔍 Tentative de chargement du modèle ML...")
 print(f"   📦 Scikit-learn version: {sklearn.__version__}")
-if sklearn.__version__ != EXPECTED_SKLEARN_VERSION:
-    print(f"   ⚠️  AVERTISSEMENT: Version différente de la version attendue ({EXPECTED_SKLEARN_VERSION})")
-    print(f"   Le modèle a été entraîné avec sklearn {EXPECTED_SKLEARN_VERSION}")
-print(f"   📂 Chemin: {MODEL_PATH}")
-print(f"   📍 Chemin absolu: {os.path.abspath(MODEL_PATH)}")
-print(
-    f"   {'✅' if os.path.exists(MODEL_PATH) else '❌'} Fichier existe: {os.path.exists(MODEL_PATH)}"
-)
 
-if os.path.exists(MODEL_PATH):
-    try:
-        model = joblib.load(MODEL_PATH)
-        print(f"   ✅ Modèle chargé avec succès")
-    except Exception as e:
-        model_error = str(e)
-        print(f"   ❌ Erreur lors du chargement: {e}")
-        print(f"   Type d'erreur: {type(e).__name__}")
-else:
-    model_error = f"Fichier non trouvé: {MODEL_PATH}"
+# Vérifier la compatibilité de version avant de charger
+if sklearn.__version__ != EXPECTED_SKLEARN_VERSION:
+    model_error = f"Version de scikit-learn incompatible. Attendue: {EXPECTED_SKLEARN_VERSION}, installée: {sklearn.__version__}"
     print(f"   ❌ {model_error}")
-    print(f"   📁 Contenu du répertoire data/:")
-    try:
-        data_dir = os.path.join(os.path.dirname(__file__), "data")
-        if os.path.exists(data_dir):
-            for item in os.listdir(data_dir):
-                print(f"      - {item}")
-    except Exception as e:
-        print(f"      Erreur listage: {e}")
+else:
+    print(f"   ✅ Version sklearn compatible: {sklearn.__version__}")
+    print(f"   📂 Chemin: {MODEL_PATH}")
+    print(f"   📍 Chemin absolu: {os.path.abspath(MODEL_PATH)}")
+    print(
+        f"   {'✅' if os.path.exists(MODEL_PATH) else '❌'} Fichier existe: {os.path.exists(MODEL_PATH)}"
+    )
+
+    if os.path.exists(MODEL_PATH):
+        try:
+            model = joblib.load(MODEL_PATH)
+            print(f"   ✅ Modèle chargé avec succès")
+        except Exception as e:
+            model_error = str(e)
+            print(f"   ❌ Erreur lors du chargement: {e}")
+            print(f"   Type d'erreur: {type(e).__name__}")
+    else:
+        model_error = f"Fichier non trouvé: {MODEL_PATH}"
+        print(f"   ❌ {model_error}")
+        print(f"   📁 Contenu du répertoire data/:")
+        try:
+            data_dir = os.path.join(os.path.dirname(__file__), "data")
+            if os.path.exists(data_dir):
+                for item in os.listdir(data_dir):
+                    print(f"      - {item}")
+        except Exception as e:
+            print(f"      Erreur listage: {e}")
 
 # Configuration CORS
 app.add_middleware(
