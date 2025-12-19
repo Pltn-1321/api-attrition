@@ -49,6 +49,11 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
+    # Configuration des ports
+    # HF Spaces utilise le port 7860, développement local utilise 8501
+    STREAMLIT_PORT = int(os.getenv("STREAMLIT_SERVER_PORT", "8501"))
+    API_PORT = 8000
+
     # Obtenir le répertoire du script
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -66,14 +71,14 @@ def main():
         sys.exit(1)
 
     # Vérifier les ports
-    if not check_port_available(8000):
-        print("⚠️  Le port 8000 (API) est déjà utilisé")
-        print("   Arrêtez le processus avec: lsof -ti:8000 | xargs kill -9")
+    if not check_port_available(API_PORT):
+        print(f"⚠️  Le port {API_PORT} (API) est déjà utilisé")
+        print(f"   Arrêtez le processus avec: lsof -ti:{API_PORT} | xargs kill -9")
         sys.exit(1)
 
-    if not check_port_available(8501):
-        print("⚠️  Le port 8501 (Streamlit) est déjà utilisé")
-        print("   Arrêtez le processus avec: lsof -ti:8501 | xargs kill -9")
+    if not check_port_available(STREAMLIT_PORT):
+        print(f"⚠️  Le port {STREAMLIT_PORT} (Streamlit) est déjà utilisé")
+        print(f"   Arrêtez le processus avec: lsof -ti:{STREAMLIT_PORT} | xargs kill -9")
         sys.exit(1)
 
     print("=" * 60)
@@ -81,16 +86,16 @@ def main():
     print("=" * 60)
 
     # Lancer l'API FastAPI
-    print("\n📡 Démarrage de l'API FastAPI...")
+    print(f"\n📡 Démarrage de l'API FastAPI sur le port {API_PORT}...")
     try:
         api_process = subprocess.Popen(
-            ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
+            ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", str(API_PORT)],
             cwd=script_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        print("   ✅ API démarrée sur http://localhost:8000")
-        print("   📖 Documentation: http://localhost:8000/docs")
+        print(f"   ✅ API démarrée sur http://localhost:{API_PORT}")
+        print(f"   📖 Documentation: http://localhost:{API_PORT}/docs")
 
         # Attendre que l'API soit prête
         print("   ⏳ Attente de la disponibilité de l'API...")
@@ -102,15 +107,16 @@ def main():
         sys.exit(1)
 
     # Lancer Streamlit
-    print("\n🎨 Démarrage de l'interface Streamlit...")
+    print(f"\n🎨 Démarrage de l'interface Streamlit sur le port {STREAMLIT_PORT}...")
     try:
         streamlit_process = subprocess.Popen(
-            ["streamlit", "run", app_path],
+            ["streamlit", "run", app_path, "--server.port", str(STREAMLIT_PORT),
+             "--server.address", "0.0.0.0", "--server.headless", "true"],
             cwd=script_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        print("   ✅ Streamlit démarré sur http://localhost:8501")
+        print(f"   ✅ Streamlit démarré sur http://localhost:{STREAMLIT_PORT}")
 
     except FileNotFoundError:
         print("\n❌ Streamlit n'est pas installé. Installez-le avec:")
@@ -123,9 +129,9 @@ def main():
     print("✨ Application prête !")
     print("=" * 60)
     print("\n📍 URLs d'accès:")
-    print("   🌐 Interface Streamlit: http://localhost:8501")
-    print("   🔌 API FastAPI:         http://localhost:8000")
-    print("   📚 Documentation API:   http://localhost:8000/docs")
+    print(f"   🌐 Interface Streamlit: http://localhost:{STREAMLIT_PORT}")
+    print(f"   🔌 API FastAPI:         http://localhost:{API_PORT}")
+    print(f"   📚 Documentation API:   http://localhost:{API_PORT}/docs")
     print("\n💡 Appuyez sur Ctrl+C pour arrêter les services")
     print("=" * 60 + "\n")
 

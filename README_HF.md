@@ -3,9 +3,8 @@ title: API Technova - Gestion RH & Attrition
 emoji: 👥
 colorFrom: blue
 colorTo: purple
-sdk: streamlit
-sdk_version: "1.30.0"
-app_file: app.py
+sdk: docker
+app_port: 7860
 pinned: false
 license: mit
 tags:
