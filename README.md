@@ -1,3 +1,20 @@
+---
+title: API Technova - Gestion RH & Attrition
+emoji: 👥
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+tags:
+  - rh
+  - data-science
+  - analytics
+  - fastapi
+  - streamlit
+---
+
 # API Attrition
 
 [![codecov](https://codecov.io/gh/Pltn-1321/api-attrition/branch/main/graph/badge.svg)](https://codecov.io/gh/Pltn-1321/api-attrition)
