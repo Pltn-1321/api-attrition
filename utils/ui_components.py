@@ -117,7 +117,7 @@ def render_footer():
 
 def render_prediction_card(prediction_data: Dict[str, Any]):
     """
-    Affiche une carte de résultat de prédiction avec indicateur de risque visuel.
+    Affiche le résultat de prédiction de manière simple avec composants Streamlit natifs.
 
     Args:
         prediction_data: Résultats de la prédiction contenant attrition_risk,
@@ -128,138 +128,40 @@ def render_prediction_card(prediction_data: Dict[str, Any]):
     probability = prediction_data.get("attrition_probability", 0)
     prediction = prediction_data.get("prediction", 0)
 
-    # Couleurs selon le niveau de risque
-    risk_colors = {
-        "Faible": {"bg": "#d4edda", "border": "#28a745", "text": "#155724"},
-        "Moyen": {"bg": "#fff3cd", "border": "#ffc107", "text": "#856404"},
-        "Élevé": {"bg": "#f8d7da", "border": "#dc3545", "text": "#721c24"},
-        "Très élevé": {"bg": "#f5c6cb", "border": "#bd2130", "text": "#721c24"},
-        "Inconnu": {"bg": "#e2e3e5", "border": "#6c757d", "text": "#383d41"},
-    }
-
-    colors = risk_colors.get(risk_level, risk_colors["Inconnu"])
-
     # Icône selon le niveau de risque
     risk_icons = {"Faible": "😊", "Moyen": "😐", "Élevé": "😟", "Très élevé": "😱", "Inconnu": "❓"}
-
     icon = risk_icons.get(risk_level, "❓")
 
     prediction_text = "Risque élevé de départ" if prediction == 1 else "Risque faible de départ"
 
-    html_content = f"""
-    <div style="
-        background: {colors['bg']};
-        padding: 25px;
-        border-radius: 15px;
-        border: 3px solid {colors['border']};
-        margin: 20px 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    ">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: {colors['text']}; margin: 0;">
-                {icon} Résultat de la prédiction d'attrition
-            </h2>
-        </div>
+    # Affichage simple avec composants natifs Streamlit
+    st.subheader(f"{icon} Résultat de la prédiction d'attrition")
 
-        <div style="display: flex; justify-content: space-around; align-items: center; margin: 20px 0;">
-            <div style="text-align: center;">
-                <div style="font-size: 48px; font-weight: bold; color: {colors['border']};">
-                    {risk_percentage}%
-                </div>
-                <div style="font-size: 16px; color: {colors['text']}; margin-top: 5px;">
-                    Risque d'attrition
-                </div>
-            </div>
+    # Métriques principales
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Risque d'attrition", f"{risk_percentage}%")
+    with col2:
+        st.metric("Niveau de risque", risk_level)
 
-            <div style="text-align: center;">
-                <div style="
-                    background: {colors['border']};
-                    color: white;
-                    padding: 10px 20px;
-                    border-radius: 25px;
-                    font-weight: bold;
-                    font-size: 18px;
-                    display: inline-block;
-                ">
-                    {risk_level}
-                </div>
-            </div>
-        </div>
-
-        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 8px;">
-            <p style="color: {colors['text']}; margin: 5px 0;">
-                <strong>Probabilité:</strong> {probability:.4f}
-            </p>
-            <p style="color: {colors['text']}; margin: 5px 0;">
-                <strong>Prédiction:</strong> {prediction_text}
-            </p>
-        </div>
-    </div>
-    """
-
-    st.markdown(html_content, unsafe_allow_html=True)
+    # Informations détaillées
+    st.write(f"**Prédiction:** {prediction_text}")
+    st.write(f"**Probabilité:** {probability:.4f}")
 
 
 def render_risk_gauge(risk_percentage: float, risk_level: str):
     """
-    Affiche une jauge de risque visuelle.
+    Affiche une barre de progression simple pour le risque.
 
     Args:
         risk_percentage: Pourcentage de risque (0-100)
         risk_level: Niveau de risque textuel
     """
-    # Déterminer la couleur et la position selon le risque
-    if risk_percentage < 30:
-        color = "#28a745"  # vert
-        position = risk_percentage
-    elif risk_percentage < 60:
-        color = "#ffc107"  # jaune
-        position = risk_percentage
-    elif risk_percentage < 80:
-        color = "#fd7e14"  # orange
-        position = risk_percentage
-    else:
-        color = "#dc3545"  # rouge
-        position = risk_percentage
-
-    # S'assurer que la position est dans les bornes 0-100%
-    position = max(0, min(100, float(risk_percentage)))
-
-    html_gauge = f"""
-    <div style="margin: 20px 0; text-align: center;">
-        <h4 style="margin-bottom: 15px;">Indicateur de risque</h4>
-        <div style="
-            width: 100%;
-            height: 30px;
-            background: linear-gradient(to right, #28a745, #ffc107, #fd7e14, #dc3545);
-            border-radius: 15px;
-            position: relative;
-            margin: 10px 0;
-        ">
-            <div style="
-                position: absolute;
-                top: -5px;
-                left: {position}%;
-                transform: translateX(-50%);
-                width: 40px;
-                height: 40px;
-                background: {color};
-                border: 3px solid white;
-                border-radius: 50%;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            "></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-            <span style="font-size: 12px; color: {COLORS['text']};">0%</span>
-            <span style="font-size: 12px; color: {COLORS['text']};">25%</span>
-            <span style="font-size: 12px; color: {COLORS['text']};">50%</span>
-            <span style="font-size: 12px; color: {COLORS['text']};">75%</span>
-            <span style="font-size: 12px; color: {COLORS['text']};">100%</span>
-        </div>
-    </div>
-    """
-
-    st.markdown(html_gauge, unsafe_allow_html=True)
+    st.write("**Indicateur de risque**")
+    # Convertir le pourcentage en valeur 0-1 pour st.progress
+    progress_value = max(0.0, min(1.0, risk_percentage / 100.0))
+    st.progress(progress_value)
+    st.caption(f"{risk_percentage}% - {risk_level}")
 
 
 def render_employee_search():
