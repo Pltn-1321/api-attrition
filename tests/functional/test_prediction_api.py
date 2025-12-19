@@ -6,6 +6,8 @@ from unittest.mock import patch
 from main import app
 
 
+@pytest.mark.api
+@pytest.mark.functional
 class TestPredictionAPI:
     """Tests pour l'endpoint /predict."""
 

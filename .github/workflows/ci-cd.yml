@@ -64,16 +64,16 @@ jobs:
         run: uv run black --check . --line-length=100
 
       - name: Run ML Model Tests
-        run: uv run pytest tests/unit/test_ml_model.py -v --tb=short --ml
+        run: uv run pytest tests/unit/test_ml_model.py -v --tb=short -m ml
 
       - name: Run API Tests
-        run: uv run pytest tests/functional/test_prediction_api.py -v --tb=short --api
+        run: uv run pytest tests/functional/test_prediction_api.py -v --tb=short -m api
 
       - name: Run Unit Tests
-        run: uv run pytest tests/unit/ -v --tb=short --unit
+        run: uv run pytest tests/unit/ -v --tb=short -m unit
 
       - name: Run Functional Tests
-        run: uv run pytest tests/functional/ -v --tb=short --functional
+        run: uv run pytest tests/functional/ -v --tb=short -m functional
 
       - name: Generate comprehensive coverage report
         run: |

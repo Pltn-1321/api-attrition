@@ -10,6 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from main import get_risk_level
 
 
+@pytest.mark.ml
 class TestMLModel:
     """Tests pour le modèle de machine learning."""
 
@@ -310,6 +311,7 @@ class TestMLModel:
         assert prediction_probas.shape == (2, 2)
 
 
+@pytest.mark.unit
 class TestRiskLevelCalculation:
     """Tests pour la fonction de calcul de niveau de risque."""
 
@@ -354,6 +356,7 @@ class TestRiskLevelCalculation:
             get_risk_level(1.1)
 
 
+@pytest.mark.unit
 class TestModelIntegration:
     """Tests d'intégration pour le modèle."""
 
