@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 import pandas as pd
 import joblib
+import sklearn
 import os
 
 from database.config import get_db
@@ -26,10 +27,18 @@ app = FastAPI(
 
 # Charger le modèle de machine learning
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "data", "export-api", "attrition_model.joblib")
+
+# Version attendue du modèle
+EXPECTED_SKLEARN_VERSION = "1.7.1"
+
 model = None
 model_error = None
 
 print(f"🔍 Tentative de chargement du modèle ML...")
+print(f"   📦 Scikit-learn version: {sklearn.__version__}")
+if sklearn.__version__ != EXPECTED_SKLEARN_VERSION:
+    print(f"   ⚠️  AVERTISSEMENT: Version différente de la version attendue ({EXPECTED_SKLEARN_VERSION})")
+    print(f"   Le modèle a été entraîné avec sklearn {EXPECTED_SKLEARN_VERSION}")
 print(f"   📂 Chemin: {MODEL_PATH}")
 print(f"   📍 Chemin absolu: {os.path.abspath(MODEL_PATH)}")
 print(
