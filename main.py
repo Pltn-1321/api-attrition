@@ -109,6 +109,11 @@ async def get_employee(employee_id: int, db: Session = Depends(get_db)):
 
 def get_risk_level(probability: float) -> str:
     """Déterminer le niveau de risque en fonction de la probabilité."""
+    if not isinstance(probability, (int, float)):
+        raise TypeError("La probabilité doit être un nombre")
+    if probability < 0 or probability > 1:
+        raise ValueError("La probabilité doit être entre 0 et 1")
+
     if probability < 0.3:
         return "Faible"
     elif probability < 0.6:
