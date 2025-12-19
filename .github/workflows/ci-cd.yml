@@ -91,6 +91,23 @@ jobs:
       - name: Run ML Model Tests
         run: uv run pytest tests/unit/test_ml_model.py -v --tb=short -m ml --no-cov
 
+      - name: Verify ML Model Compatibility
+        run: |
+          echo "🔍 Vérification de la compatibilité du modèle ML..."
+          uv run python -c "
+          import joblib
+          import sklearn
+          print(f'📦 Scikit-learn version: {sklearn.__version__}')
+
+          try:
+              model = joblib.load('data/export-api/attrition_model.joblib')
+              print(f'✅ Modèle chargé avec succès')
+              print(f'✅ Type: {type(model).__name__}')
+          except Exception as e:
+              print(f'❌ Erreur de chargement: {e}')
+              exit(1)
+          "
+
       - name: Run API Tests
         run: uv run pytest tests/functional/test_prediction_api.py -v --tb=short -m api --no-cov
 

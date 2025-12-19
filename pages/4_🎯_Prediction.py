@@ -334,7 +334,9 @@ def render_risk_factors_analysis(employee_data: dict, prediction_data: dict):
             </div>
             """
 
-            st.markdown(html_factor, unsafe_allow_html=True)
+            # Utiliser un conteneur explicite pour éviter l'échappement HTML
+            with st.container():
+                st.markdown(html_factor, unsafe_allow_html=True)
 
 
 def get_personalized_recommendations(employee_data: dict, prediction_data: dict):
