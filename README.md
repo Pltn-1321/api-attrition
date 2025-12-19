@@ -176,6 +176,52 @@ curl http://localhost:8000/employees/1
 
 Documentation interactive : http://localhost:8000/docs
 
+## Architecture Technique
+
+### Infrastructure de Production (Hugging Face Spaces)
+
+L'application utilise une architecture **monolithique conteneurisée** où FastAPI et Streamlit s'exécutent dans un seul conteneur Docker :
+
+```
+┌─────────────────────────────────────┐
+│  Conteneur Docker (HF Spaces)      │
+│                                     │
+│  FastAPI (port 8000) ──────┐       │
+│       ↑                     │       │
+│       │ localhost:8000      │       │
+│       │                     ↓       │
+│  Streamlit (port 7860) → Internet  │
+└─────────────────────────────────────┘
+```
+
+**Points importants** :
+- ✅ `API_URL=http://localhost:8000` est **correct** pour la production
+- ✅ Les deux processus communiquent via localhost interne
+- ✅ Seul le port 7860 (Streamlit) est exposé à Internet
+- ✅ L'API démarre en premier, Streamlit attend qu'elle soit prête (max 30s)
+
+### Séquence de Démarrage
+
+1. **Lancement du conteneur Docker** (`Dockerfile`)
+2. **Démarrage FastAPI** sur port 8000 (interne)
+3. **Vérification santé** : Polling de `/health` toutes les 1s (max 30s)
+4. **Démarrage Streamlit** sur port 7860 (public)
+
+Cette séquence évite l'erreur 503 "Service Unavailable" en garantissant que l'API est prête avant que Streamlit essaie de s'y connecter.
+
+### Variables d'Environnement
+
+| Variable | Valeur par défaut | Usage |
+|----------|-------------------|-------|
+| `API_URL` | `http://localhost:8000` | URL de connexion Streamlit→API |
+| `DB_TYPE` | `sqlite` | Type de BDD (`sqlite` ou `postgres`) |
+| `STREAMLIT_SERVER_PORT` | `8501` (local) / `7860` (HF) | Port d'écoute Streamlit |
+
+**Configuration automatique** :
+- Le `Dockerfile` définit `ENV API_URL=http://localhost:8000`
+- La CI/CD valide que cette configuration est correcte avant déploiement
+- Les tests unitaires vérifient que `config.py` respecte ces valeurs
+
 ## Données
 
 **294 employés · 34 colonnes**
@@ -318,3 +364,99 @@ Le workflow CI/CD (`ci-cd.yml`) s'exécute automatiquement :
 - **Sur push `main`** : + Déploiement vers Hugging Face Spaces
 
 **Documentation complète** : [CI-CD.md](CI-CD.md) - Architecture, stratégie de tests, pipeline GitHub Actions
+
+## FAQ & Troubleshooting
+
+### ❓ Pourquoi l'application utilise `localhost:8000` en production ?
+
+**Réponse** : C'est normal et correct ! Sur Hugging Face Spaces, FastAPI et Streamlit s'exécutent dans le **même conteneur Docker**. Streamlit communique avec FastAPI via `localhost:8000` en interne. Seul le port 7860 (Streamlit) est exposé à Internet.
+
+```
+Utilisateur → HF Spaces (port 7860) → Streamlit → localhost:8000 → FastAPI
+```
+
+### ⚠️ Erreur 503: Service Unavailable
+
+**Symptôme** : "503 Server Error: Service Unavailable for url: http://localhost:8000/..."
+
+**Causes possibles** :
+1. L'API FastAPI n'a pas encore terminé son démarrage
+2. L'API a crashé au démarrage
+3. Les ports ne sont pas correctement configurés
+
+**Solutions** :
+
+1. **Attendre et réessayer** (le plus courant)
+   - L'application attend automatiquement jusqu'à 30 secondes que l'API soit prête
+   - Cliquez sur le bouton "🔄 Réessayer la connexion" dans l'interface
+
+2. **Vérifier les logs** (Hugging Face Spaces)
+   - Allez dans l'onglet "Logs" de votre Space
+   - Vérifiez que les deux messages apparaissent :
+     ```
+     ✅ API démarrée sur http://localhost:8000
+     ✅ API est prête ! (démarrage en Xs)
+     ```
+
+3. **Vérifier la configuration locale**
+   ```bash
+   # Vérifier que les ports sont libres
+   lsof -i:8000  # Doit être vide
+   lsof -i:8501  # Doit être vide
+
+   # Redémarrer proprement
+   lsof -ti:8000,8501 | xargs kill -9
+   uv run streamlit_launcher.py
+   ```
+
+### 🔧 Tests de diagnostic
+
+```bash
+# Vérifier la configuration
+pytest tests/unit/test_config.py -v
+
+# Vérifier la disponibilité de l'API
+pytest tests/functional/test_api_availability.py -v
+
+# Vérifier Dockerfile
+grep "ENV API_URL" Dockerfile
+# Devrait afficher: ENV API_URL=http://localhost:8000
+```
+
+### 🐛 L'API démarre trop lentement
+
+**Solution** : Le `streamlit_launcher.py` attend désormais jusqu'à **30 secondes** pour que l'API démarre. Si votre machine est lente :
+
+```python
+# Dans streamlit_launcher.py (ligne 139)
+api_ready = wait_for_api(API_PORT, max_retries=30, retry_interval=1)
+# Vous pouvez augmenter max_retries si nécessaire
+```
+
+### 📊 Les tests de couverture échouent
+
+**Problème** : `FAIL Required test coverage of 60% not reached`
+
+**Solution** : Assurez-vous d'exécuter TOUS les tests ensemble :
+```bash
+# ✅ Correct - tous les tests
+pytest tests/ --cov=utils.api_client --cov=api --cov=database --cov=main
+
+# ❌ Incorrect - tests partiels
+pytest tests/unit/test_ml_model.py --cov=main  # Couverture trop faible
+```
+
+### 🔄 Déploiement automatique ne fonctionne pas
+
+**Checklist** :
+1. ✅ Le secret `HF_TOKEN` est défini dans GitHub Secrets
+2. ✅ Le push est sur la branche `main`
+3. ✅ Tous les tests passent (voir GitHub Actions)
+4. ✅ Le fichier `Dockerfile` est présent et valide
+5. ✅ L'URL du Space est correcte dans `.github/workflows/ci-cd.yml`
+
+### 📚 Plus d'aide
+
+- **Documentation technique** : [CLAUDE.md](CLAUDE.md)
+- **CI/CD détaillée** : [CI-CD.md](CI-CD.md)
+- **Issues GitHub** : https://github.com/Pltn-1321/api-attrition/issues

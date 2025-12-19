@@ -63,6 +63,31 @@ jobs:
       - name: Check formatting with Black
         run: uv run black --check . --line-length=100
 
+      - name: Validate Configuration
+        run: |
+          echo "🔍 Validation de la configuration Docker et environnement..."
+
+          # Vérifier que Dockerfile configure API_URL correctement
+          if grep -q "ENV API_URL=http://localhost:8000" Dockerfile; then
+            echo "✅ Dockerfile: API_URL est correctement configuré"
+          else
+            echo "❌ Dockerfile: API_URL n'est pas configuré correctement"
+            exit 1
+          fi
+
+          # Vérifier que Dockerfile configure DB_TYPE
+          if grep -q "ENV DB_TYPE=sqlite" Dockerfile; then
+            echo "✅ Dockerfile: DB_TYPE est configuré pour SQLite"
+          else
+            echo "❌ Dockerfile: DB_TYPE n'est pas configuré"
+            exit 1
+          fi
+
+          echo "✅ Toutes les validations de configuration ont réussi"
+
+      - name: Run Configuration Tests
+        run: uv run pytest tests/unit/test_config.py -v --tb=short --no-cov
+
       - name: Run ML Model Tests
         run: uv run pytest tests/unit/test_ml_model.py -v --tb=short -m ml --no-cov
 

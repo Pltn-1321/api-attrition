@@ -9,6 +9,7 @@ import sys
 import time
 import signal
 import socket
+import requests
 
 # Processus globaux pour la gestion du signal
 api_process = None
@@ -19,6 +20,40 @@ def check_port_available(port):
     """Vérifie si un port est disponible"""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("localhost", port)) != 0
+
+
+def wait_for_api(port, max_retries=30, retry_interval=1):
+    """
+    Attend que l'API soit prête en vérifiant le endpoint /health.
+
+    Args:
+        port: Port de l'API
+        max_retries: Nombre maximum de tentatives (défaut: 30)
+        retry_interval: Intervalle entre les tentatives en secondes (défaut: 1)
+
+    Returns:
+        bool: True si l'API est prête, False sinon
+    """
+    api_url = f"http://localhost:{port}/health"
+    print(f"   ⏳ Attente de la disponibilité de l'API (max {max_retries}s)...")
+
+    for retry_count in range(max_retries):
+        try:
+            response = requests.get(api_url, timeout=1)
+            if response.status_code == 200:
+                print(f"   ✅ API est prête ! (démarrage en {retry_count + 1}s)")
+                return True
+        except (requests.ConnectionError, requests.Timeout):
+            pass
+
+        # Afficher un message de progression toutes les 5 secondes
+        if (retry_count + 1) % 5 == 0:
+            print(f"   ⏳ Toujours en attente de l'API... ({retry_count + 1}s)")
+
+        time.sleep(retry_interval)
+
+    print(f"   ⚠️  L'API n'a pas démarré après {max_retries}s")
+    return False
 
 
 def signal_handler(_sig, _frame):
@@ -100,9 +135,10 @@ def main():
         print(f"   ✅ API démarrée sur http://localhost:{API_PORT}")
         print(f"   📖 Documentation: http://localhost:{API_PORT}/docs")
 
-        # Attendre que l'API soit prête
-        print("   ⏳ Attente de la disponibilité de l'API...")
-        time.sleep(3)
+        # Attendre que l'API soit prête avec retry logic
+        api_ready = wait_for_api(API_PORT, max_retries=30, retry_interval=1)
+        if not api_ready:
+            print("   ⚠️  L'API n'est pas disponible, mais on continue le lancement de Streamlit...")
 
     except FileNotFoundError:
         print("\n❌ Uvicorn n'est pas installé. Installez-le avec:")

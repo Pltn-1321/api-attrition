@@ -107,8 +107,19 @@ with st.spinner("🔄 Connexion à l'API..."):
                 show_error(f"Erreur lors de la récupération des statistiques : {str(e)}")
 
     except Exception as e:
-        show_error(f"Impossible de se connecter à l'API : {str(e)}")
-        st.info(f"URL de l'API : {API_URL}")
+        st.error("❌ Impossible de se connecter à l'API")
+        st.warning(
+            "⚠️ L'API n'est pas encore disponible. Cela peut prendre quelques secondes au démarrage."
+        )
+
+        with st.expander("🔍 Détails de l'erreur"):
+            st.code(str(e))
+            st.info(f"URL de l'API : {API_URL}")
+
+        col_retry1, col_retry2, col_retry3 = st.columns([1, 1, 1])
+        with col_retry2:
+            if st.button("🔄 Réessayer la connexion", use_container_width=True):
+                st.rerun()
 
 # Instructions
 st.markdown("---")
