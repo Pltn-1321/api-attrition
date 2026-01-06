@@ -3,6 +3,7 @@ CLAUDE.md
 
 # Python
 __pycache__/
+.ruff_cache/
 *.py[cod]
 *$py.class
 *.so
@@ -139,6 +140,9 @@ cython_debug/
 
 # VS Code
 .vscode/
+
+# Claude Code
+.claude/
 
 # macOS
 .DS_Store
