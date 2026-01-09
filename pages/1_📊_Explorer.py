@@ -49,7 +49,7 @@ with st.sidebar:
 # Récupération des données
 try:
     with st.spinner("Chargement des données..."):
-        data = st.session_state.api_client.get_employees(skip=0, limit=100)
+        data = st.session_state.api_client.get_employees(skip=0, limit=1000)
         employees = data.get("employees", [])
 
         if not employees:

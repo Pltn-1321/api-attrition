@@ -61,7 +61,7 @@ with st.spinner("🔄 Connexion à l'API..."):
 
             try:
                 # Récupérer tous les employés pour les stats
-                data = st.session_state.api_client.get_employees(skip=0, limit=100)
+                data = st.session_state.api_client.get_employees(skip=0, limit=1000)
                 total_employees = data.get("total", 0)
                 employees = data.get("employees", [])
 
