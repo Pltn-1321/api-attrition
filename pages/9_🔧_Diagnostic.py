@@ -77,7 +77,9 @@ with col3:
 
         if employees_response.status_code == 200:
             employees_data = employees_response.json()
-            test_employee = employees_data.get("employees", [])[0] if employees_data.get("employees") else None
+            test_employee = (
+                employees_data.get("employees", [])[0] if employees_data.get("employees") else None
+            )
 
             if test_employee:
                 # Retirer l'ID pour la prédiction
@@ -95,7 +97,9 @@ with col3:
             else:
                 st.warning("⚠️ Aucun employé disponible pour le test")
         else:
-            st.error(f"❌ Impossible de récupérer un employé (status {employees_response.status_code})")
+            st.error(
+                f"❌ Impossible de récupérer un employé (status {employees_response.status_code})"
+            )
 
     except Exception as e:
         st.error(f"❌ Prédiction impossible")
