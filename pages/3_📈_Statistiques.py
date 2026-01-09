@@ -26,7 +26,8 @@ st.markdown("---")
 # Récupération des données
 try:
     with st.spinner("Chargement des données..."):
-        data = st.session_state.api_client.get_employees(skip=0, limit=100)
+        data = st.session_state.api_client.get_employees(skip=0, limit=1000)
+        total_employees = data.get("total", 0)
         employees = data.get("employees", [])
 
         if not employees:
@@ -41,7 +42,7 @@ try:
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.metric("Total Employés", len(df))
+            st.metric("Total Employés", total_employees)
 
         with col2:
             avg_age = df["age"].mean()

@@ -71,23 +71,36 @@ with col2:
 with col3:
     st.subheader("🔮 Test Prédiction")
 
-    test_data = {
-        "genre": "Homme",
-        "age": 30,
-        "revenu_mensuel": 5000,
-        "poste": "Technicien",
-        "departement": "Informatique",
-    }
-
     try:
-        pred_response = requests.post(f"{API_URL}/predict", json=test_data, timeout=15)
-        if pred_response.status_code == 200:
-            pred_data = pred_response.json()
-            st.success("✅ Prédiction fonctionnelle")
-            st.json(pred_data)
+        # Récupérer un vrai employé de la base pour tester
+        employees_response = requests.get(f"{API_URL}/employees?limit=1", timeout=10)
+
+        if employees_response.status_code == 200:
+            employees_data = employees_response.json()
+            test_employee = (
+                employees_data.get("employees", [])[0] if employees_data.get("employees") else None
+            )
+
+            if test_employee:
+                # Retirer l'ID pour la prédiction
+                test_data = {k: v for k, v in test_employee.items() if k != "id"}
+
+                # Tester la prédiction
+                pred_response = requests.post(f"{API_URL}/predict", json=test_data, timeout=15)
+                if pred_response.status_code == 200:
+                    pred_data = pred_response.json()
+                    st.success("✅ Prédiction fonctionnelle")
+                    st.json(pred_data)
+                else:
+                    st.error(f"❌ Erreur {pred_response.status_code}")
+                    st.text(pred_response.text)
+            else:
+                st.warning("⚠️ Aucun employé disponible pour le test")
         else:
-            st.error(f"❌ Erreur {pred_response.status_code}")
-            st.text(pred_response.text)
+            st.error(
+                f"❌ Impossible de récupérer un employé (status {employees_response.status_code})"
+            )
+
     except Exception as e:
         st.error(f"❌ Prédiction impossible")
         st.code(str(e))

@@ -602,6 +602,11 @@ def main():
     )
 
     # Initialiser l'API client
+    if "api_client" not in st.session_state:
+        from utils.api_client import APIClient
+
+        st.session_state.api_client = APIClient()
+
     api_client = st.session_state.api_client
 
     # Interface de recherche
